@@ -1,0 +1,7 @@
+fn nfib n m ::
+  [0, 1] (dup m take sum push){n} head 
+end
+
+fn main ::
+    read to_int read to_int nfib
+end

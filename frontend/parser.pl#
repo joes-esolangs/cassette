@@ -52,14 +52,14 @@ expr(E) --> lit(E); sym(E); seq(E).
 expr_list(E) --> expr(E).
 expr_list([E|R]) --> expr(E), expr_list(R).
 
-pat_list(P)         --> pattern(P).
-pat_list([P|R])     --> pattern(P), pat_list(R).
-pattern(pat_lit(V)) --> [lit_t(V, _)].
-pattern(pat_var(N)) --> [sym_t(N, _)].
+pat_list(P)             --> pattern(P).
+pat_list([P|R])         --> pattern(P), pat_list(R).
+pattern(pat_lit(V))     --> [lit_t(V, _)].
+pattern(pat_var(N))     --> [sym_t(N, _)].
 pattern(pat_cons(H, T)) --> ['['(_)], pat_list(H), [sym_t("<:",_)], pattern(T), [']'(_)].
 pattern(pat_snoc(F, L)) --> ['['(_)], pattern(F), [sym_t(":>",_)], pat_list(L), [']'(_)].
-pattern(pat_list([])) --> ['['(_), ']'(_)].
-pattern(pat_list(L)) --> ['['(_)], pat_list(L), [']'(_)].
+pattern(pat_list([]))   --> ['['(_), ']'(_)].
+pattern(pat_list(L))    --> ['['(_)], pat_list(L), [']'(_)].
 
-block(Instructions) --> ['::'(_)], instructions(Instructions), ['end'(_)].
+block(Instructions)    --> ['::'(_)], instructions(Instructions), ['end'(_)].
 single(Instruction)    --> ['->'(_)], instruction(Instruction).
