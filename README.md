@@ -9,6 +9,6 @@ fn reverse_tape [] :: [] end
 fn reverse_tape [x <: xs] :: [xs reverse_tape :> x] end
 
 fn main ::
-    [1 ~ 2 ~ 3] reverse_tape out
+    [1, 2, 3] reverse_tape out
 end
 ```
