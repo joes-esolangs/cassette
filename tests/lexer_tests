@@ -1,0 +1,27 @@
+:- module(lexer_tests, [test1/0]).
+:- use_module(lexer).
+
+test1() :-
+    Code = `
+    fn plus :: a b + end
+    fn main :: 6 7 plus "hello world" out out end
+    `, lexer:pretty_print(Code) = [ fn(2),
+  symbol_t("plus",2),
+  ::(2),
+  symbol_t("a",2),
+  symbol_t("b",2),
+  symbol_t("+",2),
+  end(2),
+  fn(3),
+  symbol_t("main",3),
+  ::(3),
+  lit_t(6,3),
+  lit_t(7,3),
+  symbol_t("plus",3),
+  lit_t("hello world",3),
+  symbol_t("out",3),
+  symbol_t("out",3),
+  end(3),
+  symbol_t("|",4),
+  symbol_t("|",4)
+].
