@@ -7,59 +7,56 @@ parse(Code, AST) :-
     % group functions here
     instructions(AST, Out, []).
 
-instruction(N) --> fn_def(N); lam_def(N); lit(N); sym(N); seq(N); pass(N); tracer; as_def(N); loop(N).
+% Root symbol
+instructions([Node|Rest]) --> instruction(Node, all), (instructions(Rest, all); {Rest = []}).
 
-instructions([N]) --> instruction(N).
-instructions([N|R]) --> instruction(N), instructions(R).
+instruction(Node, all) --> fn(Node); lam(Node); lit(Node); sym(Node); seq(Node); pass(Node); tracer; as(Node); loop(Node); if(Node); case(Node).
+instruction(Node, case) --> instructions(Node, all); outer_scoped(Node).
+instructions([Node|Rest], Type) --> instruction(Node, Type), (instructions(Rest, Type); {Rest = []}).
 
 tracer --> [sym_t("$trace",_)], {trace}.
 
-fn_def(fn(Name, Args, Instructions)) --> ['fn'(_), sym_t(Name, _)], arg_list(Args), (block(Instructions); single(Instructions)).
-fn_def(fn(Name, [], Instructions)) --> ['fn'(_), sym_t(Name, _)], (block(Instructions); single(Instructions)).
+fn(fn(Name, Args, Instructions)) --> ['fn'(_), sym_t(Name, _)], (arg_list(Args); {Args = []}), block(Instructions).
 
-lam_def(lam(Args, Instructions)) --> ['lam'(_)], arg_list(Args), ['::'(_)], instructions(Instructions), ['end'(_)].
-lam_def(lam([], Instructions)) --> ['lam'(_)], (block(Instructions); single(Instructions)).
-lam_def(lam([], Instructions, [L1, L2])) --> ['('(L1)], instructions(Instructions), [')'(L2)].
+lam(lam(Args, Instructions)) --> ['lam'(_)], (arg_list(Args); {Args = []}), block(Instructions).
+lam(lam([], Instructions)) --> ['('(_)], instructions(Instructions), [')'(_)].
 
-as_def(as(Args)) --> ['as'(_)], arg_list(Args), ['->'(_)].
+as(as(Args)) --> ['as'(_)], arg_list(Args), ['->'(_)].
 
-loop(ntimes(N, L)) --> lam_def(L), ['{'(_)], lit(N), ['}'(_)].
-loop(for(Instructions)) --> ['loop'(_)], (block(Instructions); single(Instructions)). % use collection on stack
-loop(for(Pattern, Collection, Instructions)) --> ['loop'(_)], pattern(Pattern), ['in'(_)], expr_list(Collection), (block(Instructions); single(Instructions)).
-loop(for(Collection, Instructions)) --> ['loop'(_)], expr_list(Collection), (block(Instructions); single(Instructions)).
-loop(while(Condition, Instructions)) --> ['loop'(_)], expr_list(Condition), (block(Instructions); single(Instructions)).
-loop(while(Instructions)) --> ['loop'(_)], (block(Instructions); single(Instructions)). % use lambda on stack
+loop(ntimes(N, L)) --> lam(L), ['{'(_)], lit(N), ['}'(_)].
+loop(for(Pattern, Collection, Instructions)) --> ['loop'(_)], (pattern(Pattern), ['in'(_)]; {Pattern = []}), (expr_list(Collection); {Collection = []}), block(Instructions). % use collection on stack if collection is empty
+loop(while(Condition, Instructions)) --> ['while'(_)], (expr_list(Condition); {Condition = []}), block(Instructions). % use lambda on stack if cond is empty
 
-pass(pass(L)) --> ['pass'(L)].
+if(if(Condition, If, Else)) --> ['if'(_)], (expr_list(Condition); {Condition = []}), block(If), (['else'(_)], block(Else); {Else = []}).
 
-lit(lit(V)) --> [lit_t(V, _)].
-sym(sym(N)) --> [sym_t(N, _)].
+case(case(Values, Branches, Else)) --> ['case'(_)], (elems(Values); {Values = []}), ['::'(_)], branches(Branches), (['|'(_), '->'(_)], instructions(Else, case); {Else = []}), ['end'(_)].
+branch(branch(Patterns, Instructions)) --> ['|'(_)],  pat_list(Patterns), ['->'(_)], instructions(Instructions, case).
+branches([Branch|Rest]) --> branch(Branch), (branches(Rest); {Rest = []}).
+outer_scoped(out_scoped(Name)) --> ['^'(_), sym_t(Name, _)].
 
-elem(N)               --> lit(N); sym(N); seq(N); lam_def(N).
-elem_group(N)         --> elem(N).
-elem_group([N|R])     --> elem(N), elem_group(R).
-elems(N)              --> elem_group(N).
-elems([N|R])          --> elem_group(N), [','(_)], elems(R).
-seq(cons(H, T))       --> ['['(_)], elems(H), [sym_t("<:",_)], elem_group(T), [']'(_)].
-seq(snoc(F, L))       --> ['['(_)], elem_group(F), [sym_t(":>",_)], elems(L), [']'(_)].
-seq(tape([])) --> ['['(_), ']'(_)].
-seq(tape(N))  --> ['['(_)], elems(N), [']'(_)]. % circular doubly linked list
+pass(pass) --> ['pass'(_)].
 
-arg_list(P)     --> pattern(P).
-arg_list([P|R]) --> pattern(P), arg_list(R).
+lit(lit(Value)) --> [lit_t(Value, _)].
+sym(sym(Name)) --> [sym_t(Name, _)].
 
-expr(E) --> lit(E); sym(E); seq(E).
-expr_list(E) --> expr(E).
-expr_list([E|R]) --> expr(E), expr_list(R).
+% expr(Node) --> lit(Node); sym(Node); seq(Node); lam(Node); loop(Node);
+% if(Node); as(Node).
 
-pat_list(P)         --> pattern(P).
-pat_list([P|R])     --> pattern(P), pat_list(R).
-pattern(pat_lit(V)) --> [lit_t(V, _)].
-pattern(pat_var(N)) --> [sym_t(N, _)].
-pattern(pat_cons(H, T)) --> ['['(_)], pat_list(H), [sym_t("<:",_)], pattern(T), [']'(_)].
+elem_group([Node|Rest])     --> instruction(Node, all), (elem_group(Rest); {Rest = []}).
+elems([Node|Rest])          --> elem_group(Node), ([','(_)], elems(Rest); {Rest = []}).
+seq(cons(Head, Tail))       --> ['['(_)], elems(Head), [sym_t("<:",_)], elem_group(Tail), [']'(_)].
+seq(snoc(Beginning, Last))       --> ['['(_)], elem_group(Beginning), [sym_t(":>",_)], elems(Last), [']'(_)].
+seq(tape(Elements))          --> ['['(_)], (elems(Elements); {Elements = []}), [']'(_)]. % circular doubly linked list
+
+arg_list([Pattern|Rest]) --> pattern(Pattern), (arg_list(Rest); {Rest = []}).
+expr_list([Expr|Rest]) --> instruction(Expr, all), (expr_list(Rest); {Rest = []}).
+
+pat_list([Pattern|Rest])         --> pattern(Pattern), ([','(_)], pat_list(Rest); {Rest = []}).
+pattern(pat_lit(Value))     --> [lit_t(Value, _)].
+pattern(pat_var(Name))     --> [sym_t(Name, _)].
+pattern(pat_cons(Head, Tail)) --> ['['(_)], pat_list(Head), [sym_t("<:",_)], pattern(Tail), [']'(_)].
 pattern(pat_snoc(F, L)) --> ['['(_)], pattern(F), [sym_t(":>",_)], pat_list(L), [']'(_)].
-pattern(pat_list([])) --> ['['(_), ']'(_)].
-pattern(pat_list(L)) --> ['['(_)], pat_list(L), [']'(_)].
+pattern(pat_list(L))    --> ['['(_)], (pat_list(L); {L = []}), [']'(_)].
 
-block(Instructions) --> ['::'(_)], instructions(Instructions), ['end'(_)].
-single(Instruction)    --> ['->'(_)], instruction(Instruction).
+block(Instructions)    --> ['::'(_)], instructions(Instructions), ['end'(_)]; ['->'(_)], instruction(Instructions, all).
+
