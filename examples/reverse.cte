@@ -1,5 +1,5 @@
 fn reverse [] -> [] 
-fn reverse [x <: xs] -> [xs reverse_tape :> x] 
+fn reverse [x <: xs] -> [xs reverse :> x] 
 
 fn main ::
     [1, 2, 3] reverse out
