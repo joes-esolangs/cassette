@@ -1,6 +1,5 @@
 # cassette
- a new revolutionary highlevel and readable tape language (unlike brainf)
-
+ a new revolutionary highlevel and readable tape language (unlike brainf), written entirely in prolog
 # examples
 
 reversing a tape:
