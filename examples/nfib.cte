@@ -3,5 +3,5 @@ fn nfib n m ::
 end
 
 fn main ::
-    read to_int read to_int nfib
+    in to_int in to_int nfib
 end

@@ -45,39 +45,39 @@ tokenize([In|T_i], [Out|T_o], LineNo) :-
     tokenize(Remain, T_o, LineNo).
 
 % for lists and tapestokenize
-tokenize([0',|T_i], [','(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0',|T_i], [','(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
 tokenize([0'[|T_i], ['['(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0']|T_i], [']'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 
 % keywords
 % TODO: organize keywords better
 % define idents push to the stack.
-tokenize([0'f, 0'n|T_i], ['fn'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
-tokenize([0'c, 0'o, 0'n, 0'd|T_i], ['cond'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
+tokenize([0'f, 0'n|T_i], ['fn'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'c, 0'o, 0'n, 0'd|T_i], ['cond'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'c, 0'a, 0's, 0'e|T_i], ['case'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
-tokenize([0'l, 0'o, 0'o, 0'p|T_i], ['loop'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
-tokenize([0'w, 0'h, 0'i, 0'l, 0'e|T_i], ['while'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
-tokenize([0'i, 0'f|T_i], ['if'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
-tokenize([0'e, 0'l, 0's, 0'e|T_i], ['else'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
-tokenize([0'm, 0'o, 0'd|T_i], ['mod'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
-tokenize([0'u, 0's, 0'e|T_i], ['use'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
-tokenize([0'l, 0'a, 0'm, 0'b|T_i], ['lam'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
-tokenize([0'l, 0'a, 0'm|T_i], ['lam'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
-tokenize([0'a, 0's|T_i], ['as'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
-tokenize([0'e, 0'n, 0'd|T_i], ['end'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
-tokenize([0':, 0':|T_i], ['::'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
-tokenize([0'-, 0'>|T_i], ['->'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
-tokenize([0'i, 0'n|T_i], ['in'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
+tokenize([0'l, 0'o, 0'o, 0'p|T_i], ['loop'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'w, 0'h, 0'i, 0'l, 0'e|T_i], ['while'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'i, 0'f|T_i], ['if'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'e, 0'l, 0's, 0'e|T_i], ['else'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'm, 0'o, 0'd|T_i], ['mod'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'u, 0's, 0'e|T_i], ['use'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'l, 0'a, 0'm, 0'b|T_i], ['lam'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'l, 0'a, 0'm|T_i], ['lam'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'a, 0's|T_i], ['as'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'e, 0'n, 0'd|T_i], ['end'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0':, 0':|T_i], ['::'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'-, 0'>|T_i], ['->'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'i, 0'n|T_i], ['in'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'(|T_i], ['('(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0')|T_i], [')'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'{|T_i], ['{'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'}|T_i], ['}'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
-tokenize([0'p, 0'a, 0's, 0's|T_i], ['pass'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo). % a do nothing method. does nothing
-tokenize([0't, 0'r, 0'u, 0'e|T_i], ['true'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
-tokenize([0'f, 0'a, 0'l, 0's, 0'e|T_i], ['false'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
-tokenize([0'@|T_i], ['@'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
-tokenize([0'^|T_i], ['^'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
-tokenize([0'||T_i], ['|'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
+tokenize([0'p, 0'a, 0's, 0's|T_i], ['pass'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo). % a do nothing method. does nothing
+tokenize([0't, 0'r, 0'u, 0'e|T_i], ['true'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'f, 0'a, 0'l, 0's, 0'e|T_i], ['false'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'@|T_i], ['@'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'^|T_i], ['^'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'||T_i], ['|'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 
 % strings
 tokenize([0'"|T_i], [Out|T_o], LineNo) :-

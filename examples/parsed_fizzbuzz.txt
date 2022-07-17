@@ -1,0 +1,13 @@
+[ fn("fizzbuzz",
+     [pat_var("n")],
+     [lit(1),sym("n"),sym("range"),lam([],[lit(atom("'print")),sym("fizzbuzz")]),sym("map")]),
+  fn("fizzbuzz",
+     [pat_var("n"),pat_lit(atom("'print"))],
+     case([[sym("n"),lit(3),sym("mod")],[sym("n"),lit(5),sym("mod")]],
+          [ branch([pat_lit(0),pat_lit(0)],[[lit("FizzBuzz"),sym("out")]]),
+            branch([pat_lit(0),pat_var("_")],[[lit("Fizz"),sym("out")]]),
+            branch([pat_var("_"),pat_lit(0)],[[lit("Buzz"),sym("out")]])
+          ],
+          [[sym("n"),sym("out")]])),
+  fn("main",[],[sym("in"),sym("to_int"),sym("fizzbuzz")])
+]

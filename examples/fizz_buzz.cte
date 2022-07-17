@@ -1,22 +1,9 @@
-%%%%%%%%%
-% alternative:
-%
-% fn fizz_buzz n -> (n 3 % n 5 % n 15 % n fizz_buzz outn){n}
-% fn fizz_buzz m3 m5 m15 n -> 
-%  case m3, m5, m15 ::
-%    | 0, _, _ -> "fizz"
-%    | _, 0, _ -> "buzz"
-%    | _, 0, 0 -> "fizzbuzz"
-%    | _, _, _ -> ^n
-%  end
-%%%%%%%%%%
-
 fn nfizz ->
   cond :: 
     | 15 % 0 == -> "FizzBuzz"
     | 3 % 0 == -> "Fizz"
     | 5 % 0 == -> "Buzz"
-    | -> to_string
+    |-> to_string
   end
 
 fn fizz_buzz ::
@@ -24,5 +11,5 @@ fn fizz_buzz ::
 end
 
 fn main ::
-    read to_int fizz_buzz
+    in to_int fizz_buzz
 end

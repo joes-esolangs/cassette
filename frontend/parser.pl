@@ -34,7 +34,7 @@ if(if(Condition, If, Else)) --> ['if'(_)], (expr_list(Condition); {Condition = [
 case(case(Values, Branches, Else)) --> ['case'(_)], (elems(Values); {Values = []}), ['::'(_)], branches(Branches, case), (['|'(_), '->'(_)], instructions(Else, case); {Else = []}), ['end'(_)].
 outer_scoped(out_scoped(Name)) --> ['^'(_), sym_t(Name, _)].
 
-cond(cond(Values, Branches, Else)) --> ['cond'(_)], (pat_list(Values); {Values = []}), ['::'(_)], branches(Branches, cond), (['|'(_), '->'(_)], instructions(Else, case); {Else = []}), ['end'(_)].
+cond(cond(Values, Branches, Else)) --> ['cond'(_)], (pat_list(Values); {Values = []}), ['::'(_)], branches(Branches, cond), (['|'(_), '->'(_)], instructions(Else, all); {Else = []}), ['end'(_)].
 
 branch(branch(Expressions, Instructions), Type, NoPipe) --> ({NoPipe = true}; ['|'(_)]),  ({Type = case}, pat_list(Expressions); {Type = cond}, expr_list(Expressions)), ['->'(_)], instructions(Instructions, case).
 branches([Branch|Rest], Type) --> ({Pipe = true; Pipe = false}, branch(Branch, Type, Pipe)), (branches(Rest, Type); {Rest = []}).
@@ -63,5 +63,5 @@ pattern(pat_cons(Head, Tail)) --> ['['(_)], pat_list(Head), [sym_t("<:",_)], pat
 pattern(pat_snoc(F, L)) --> ['['(_)], pattern(F), [sym_t(":>",_)], pat_list(L), [']'(_)].
 pattern(pat_list(L))    --> ['['(_)], (pat_list(L); {L = []}), [']'(_)].
 
-block(Instructions)    --> (['->'(_)]; {error("Missing a '->'")}), instruction(Instructions, all);(['::'(_)]; {error("Missing a '::'")}), instructions(Instructions), (['end'(_)]; {error("Missing an 'end'")}) .
+block(Instructions)    --> ['::'(_)], instructions(Instructions), ['end'(_)]; ['->'(_)], instruction(Instructions, all).
 

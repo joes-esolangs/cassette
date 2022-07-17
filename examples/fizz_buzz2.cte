@@ -1,0 +1,12 @@
+fn fizzbuzz n :: 1 n range ('print fizzbuzz) map end
+fn fizzbuzz n 'print ->
+  case n 3 mod, n 5 mod ::
+    | 0, 0 -> "FizzBuzz" out
+    | 0, _ -> "Fizz" out
+    | _, 0 -> "Buzz" out
+    |-> n out
+  end
+
+fn main ::
+  in to_int fizz_buzz
+end
