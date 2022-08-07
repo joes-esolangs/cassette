@@ -1,6 +1,6 @@
-fn reverse [] -> [] 
-fn reverse [x <: xs] -> [xs reverse :> x] 
+fn [] reverse -> [] 
+fn [x <: xs] reverse -> [xs reverse :> x] 
 
-fn main ::
+fn main :-
     [1, 2, 3] reverse out
 end

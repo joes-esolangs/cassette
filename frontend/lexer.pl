@@ -1,4 +1,4 @@
-:- module(lexer, [tokenize/2]).
+:- module(lexer, [tokenize/2, pretty_print/1]).
 
 tokenize(In, Out) :- tokenize(In, Out, 1).
 
@@ -65,8 +65,8 @@ tokenize([0'l, 0'a, 0'm, 0'b|T_i], ['lam'(LineNo)|T_o], LineNo) :- tokenize(T_i,
 tokenize([0'l, 0'a, 0'm|T_i], ['lam'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'a, 0's|T_i], ['as'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'e, 0'n, 0'd|T_i], ['end'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
-tokenize([0':, 0':|T_i], ['::'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
-tokenize([0'-, 0'>|T_i], ['->'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0':, 0'-|T_i], [':-'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
+tokenize([0'-, 0'>|T_i], ['->'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
 tokenize([0'i, 0'n|T_i], ['in'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'(|T_i], ['('(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0')|T_i], [')'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
@@ -77,7 +77,7 @@ tokenize([0't, 0'r, 0'u, 0'e|T_i], ['true'(LineNo)|T_o], LineNo) :- tokenize(T_i
 tokenize([0'f, 0'a, 0'l, 0's, 0'e|T_i], ['false'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'@|T_i], ['@'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'^|T_i], ['^'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
-tokenize([0'||T_i], ['|'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'||T_i], ['|'(LineNo)|T_o], LineNo) :- !, tokenize(T_i, T_o, LineNo).
 
 % strings
 tokenize([0'"|T_i], [Out|T_o], LineNo) :-
@@ -95,18 +95,23 @@ tokenize([0''|T_i], [Out|T_o], LineNo) :-
 
 % identifiers
 tokenize([In|T_i], [Out|T_o], LineNo) :-
-    ident_type(In),
+    ident_type(In, first),
     consume_customtype([In|T_i], ident_type, Remain, CharList),
     string_codes(Name, CharList),
     Out = sym_t(Name, LineNo),
     tokenize(Remain, T_o, LineNo).
 
 % utils
-ident_type(Char) :-
-    Char \= 0'^,
-    (code_type(Char, prolog_identifier_continue);
-    code_type(Char, prolog_symbol);
-    Char = 0'').
+ident_type(Char, Type) :-
+    Char \= 0'(,
+    Char \= 0'),
+    Char \= 0'[,
+    Char \= 0'],
+    Char \= 0'",
+    Char \= 0',,
+    (code_type(Char, punct);
+    (Type = first, code_type(Char, csymf)
+    ;   code_type(Char, csym))).
 
 consume_type([], _, [], []).
 consume_type([Char|In], Type, Remain, [Char|Out]) :-
@@ -117,10 +122,10 @@ consume_type([Char|In], Type, [Char|In], []) :-
 
 consume_customtype([], _, [], []).
 consume_customtype([Char|In], Type, Remain, [Char|Out]) :-
-    call(Type, Char),
+    call(Type, Char, notf),
     consume_customtype(In, Type, Remain, Out).
 consume_customtype([Char|In], Type, [Char|In], []) :-
-    \+ call(Type, Char).
+    \+ call(Type, Char, notf).
 
 consume_until([], _, [], []).
 consume_until([TargetChar|In], TargetChar, In, []).
