@@ -1,14 +1,13 @@
 # cassette
- a new revolutionary highlevel and readable tape language (unlike brainf)
-
+ a new revolutionary highlevel and readable tape language (unlike brainf), written entirely in prolog
 # examples
 
 reversing a tape:
 ```elixir
-fn reverse_tape [] :: [] end
-fn reverse_tape [x <: xs] :: [xs reverse_tape :> x] end
+fn reverse [] -> [] 
+fn reverse [x <: xs] -> [xs reverse :> x] 
 
 fn main ::
-    [1, 2, 3] reverse_tape out
+    [1, 2, 3] reverse out
 end
 ```
