@@ -17,10 +17,11 @@ pattern(pat_cons(Head, Tail)) --> ['['(_)], pat_list(Head), [sym_t("<:",_)], pat
 pattern(pat_snoc(F, L)) --> ['['(_)], pattern(F), [sym_t(":>",_)], pat_list(L), [']'(_)].
 pattern(pat_list(L))    --> ['['(_)], (pat_list(L); {L = []}), [']'(_)].
 
-branch(branch(Expressions, Instructions), Type, NoPipe) --> ({NoPipe = true}; ['|'(_)]), ({Type = case}, pat_list(Expressions); {Type = cond}, expr_list(Expressions)), ['->'(_)], instructions(Instructions, all).
+branch(branch(Expressions, When, Instructions), case, NoPipe) --> ({NoPipe = true}; ['|'(_)]), pat_list(Expressions), (['when'(_)], instructions(When); {When = []}), ['->'(_)], instructions(Instructions, all).
+branch(branch(Expressions, Instructions), cond, NoPipe) --> ({NoPipe = true}; ['|'(_)]), instructions(Expressions), ['->'(_)], instructions(Instructions, all).
 branches([Branch|Rest], Type) --> ({Pipe = true; Pipe = false}, branch(Branch, Type, Pipe)), (branches(Rest, Type); {Rest = []}).
 
-fn(fn(Name, Args, Instructions)) --> ['fn'(_)], (arg_list(Args); {Args = []}), [sym_t(Name, _)], block(Instructions).
+fn(fn(Name, Args, When, Instructions)) --> ['fn'(_)], (arg_list(Args); {Args = []}), [sym_t(Name, _)], (['when'(_)], instructions(When); {When = []}), block(Instructions).
 
 cond(cond(Branches, Else)) --> ['cond'(_)], branches(Branches, cond), (['|'(_), '->'(_)], instructions(Else, all); {Else = []}), ['end'(_)].
 
@@ -43,7 +44,7 @@ as(as(Args)) --> ['as'(_)], arg_list(Args), ['->'(_)].
 
 loop(ntimes(N, L)) --> lam(L), ['{'(_)], lit(N), ['}'(_)].
 
-if(if(Condition, If, Else)) --> ['if'(_)], (expr_list(Condition); {Condition = []}), block(If), (['else'(_)], block(Else); {Else = []}).
+if(if(Condition, If, Else)) --> ['if'(_)], (instructions(Condition); {Condition = []}), block(If), (['else'(_)], block(Else); {Else = []}).
 
 pass(pass) --> ['pass'(_)].
 
@@ -61,7 +62,8 @@ seq(snoc(Beginning, Last))       --> ['['(_)], elem_group(Beginning), [sym_t(":>
 seq(tape(Elements))          --> ['['(_)], (elems(Elements); {Elements = []}), [']'(_)]. % circular doubly linked list
 
 arg_list([Pattern|Rest]) --> pattern(Pattern), (arg_list(Rest); {Rest = []}).
-expr_list([Expr|Rest]) --> instruction(Expr, all), (expr_list(Rest); {Rest = []}).
+% expr_list([Expr|Rest]) --> instruction(Expr, all), (expr_list(Rest);
+% {Rest = []}).
 
 
 

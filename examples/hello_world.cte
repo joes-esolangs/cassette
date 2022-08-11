@@ -1,1 +1,1 @@
-fn main :: "hello world" outn end
+fn main :- "hello world" outn end

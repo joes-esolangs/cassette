@@ -1,21 +1,23 @@
-:- module(eval, [eval/3, run/1, run_bare/1]).
+:- module(eval, [eval/4, run/1, run_bare/1]).
 :- use_module('../frontend/parser').
 :- use_module(tape).
 
-eval([], _CTX, _Tape) :- !.
+% eval(AST, CTX, Tape, Res) :- eval(AST, CTX, Tape), Res = (CTX, Tape).
+
+eval([], CTX, Tape, (CTX, Tape)).
 
 % literals
-eval([lit(Lit)|Rest], CTX, Tape) :- !,
+eval([lit(Lit)|Rest], CTX, Tape, Res) :-
     tape:ins(Lit, Tape, NTape),
-    eval(Rest, CTX, NTape).
+    eval(Rest, CTX, NTape, Res).
 
 % basic variables
 % TODO: add patterns and multiples variable decls
-eval([as([pat_var(Pat)])|Rest], CTX, Tape) :-
+eval([as([pat_var(Pat)])|Rest], CTX, Tape, Res) :-
     tape:get_v(Tape, Val),
     tape:del(Tape, NTape),
     atom_string(N, Pat),
-    eval(Rest, CTX.put([N=Val]), NTape).
+    eval(Rest, CTX.put([N=Val]), NTape, Res).
 
 % run
 
@@ -25,6 +27,8 @@ run(Code) :-
 
 run_bare(AST) :-
     tape:empty(Tape), CTX = ctx{},
-    eval(AST, CTX, Tape),
-    print_term(Tape, []), nl, print_term(CTX, []).
+    eval(AST, CTX, Tape, Res),
+%    (CTX, Tape) = Res,
+%    print_term(Tape, []), nl, print_term(CTX, []).
+     print_term(Res, []).
 

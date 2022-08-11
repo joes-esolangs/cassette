@@ -1,7 +1,7 @@
-fn nfib n m ::
+fn n m nfib :-
   [0, 1] (dup m take sum push){n} head 
 end
 
-fn main ::
+fn main :-
     in to_int in to_int nfib
 end
