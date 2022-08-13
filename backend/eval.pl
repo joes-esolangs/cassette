@@ -33,7 +33,7 @@ run(Code) :-
 run_bare(AST) :-
     Tape @- !, CTX = ctx{},
     eval(AST, CTX, Tape, Res),
-%    (CTX, Tape) = Res,
-%    print_term(Tape, []), nl, print_term(CTX, []).
-     print_term(Res, []).
+    (ECTX, ETape) = Res,
+    print_term(ETape, []), nl, print_term(ECTX, []).
+
 

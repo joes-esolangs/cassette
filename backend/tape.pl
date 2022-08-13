@@ -14,11 +14,9 @@
     del/2,
     get_v/2,
     left/2,
-    right/2,
+    right/2
 ]).
 
-% modify a tape
-% rename to @- operator
 @-(Res, !) :-
     empty(T), Res = T.
 @-(Res, T+V) :-

@@ -31,6 +31,8 @@ pattern(pat_var(Name))     --> [sym_t(Name, _)].
 pattern(pat_cons(Head, Tail)) --> ['['(_)], pat_list(Head), ['<:'(_)], pattern(Tail), [']'(_)].
 pattern(pat_snoc(F, L)) --> ['['(_)], pattern(F), [':>'(_)], pat_list(L), [']'(_)].
 pattern(pat_list(L))    --> ['['(_)], (pat_list(L); {L = []}), [']'(_)].
+pattern(pat_tuple(T))   --> ['{'(_)], (pat_list(T); {T = []}), ['}'(_)].
+pattern(pat_quote(Q))  --> ['('(_)], (pattern(pat_var(Q)); {Q = ""}), ['}'(_)]. % extract the code inside the quote to make a function
 
 branch(branch(Expressions, When, Instructions), case, NoPipe) --> ({NoPipe = true}; ['|'(_)]), pat_list(Expressions), (['when'(_)], instructions(When); {When = []}), ['->'(_)], instructions(Instructions, all).
 branch(branch(Expressions, Instructions), cond, NoPipe) --> ({NoPipe = true}; ['|'(_)]), instructions(Expressions), ['->'(_)], instructions(Instructions, all).
@@ -44,8 +46,11 @@ case(case(Values, Branches, Else)) --> ['case'(_)], (elems(Values); {Values = []
 
 tracer --> [sym_t("$trace",_)], {trace}.
 
-lam(lam([as(Args)|Body])) --> ['lam'(_)], arg_list(Args), block(Body, s).
-lam(lam(Body))  --> ['lam'(_)], instructions(Body), ['end'(_)].lam(lam(Body)) --> ['('(_)], instructions(Body), [')'(_)].
+lam(named_lam(Name, [as(Args)|Body])) --> ['lam'(_), '~'(_), sym_t(Name, _)], arg_list(Args), block(Body, s).
+
+lam(quote([as(Args)|Body])) --> ['lam'(_)], arg_list(Args), block(Body, s).
+lam(quote(Body))  --> ['lam'(_)], instructions(Body), ['end'(_)].
+lam(quote(Body)) --> ['('(_)], instructions(Body), [')'(_)].
 
 as(as(Args)) --> ['as'(_)], arg_list(Args), ['->'(_)].
 
@@ -67,7 +72,8 @@ elem_group([Node|Rest])     --> instruction(Node, all), (elem_group(Rest); {Rest
 elems([Node|Rest])          --> elem_group(Node), ([','(_)], elems(Rest); {Rest = []}).
 seq(cons(Head, Tail))       --> ['['(_)], elems(Head), ['<:'(_)], elem_group(Tail), [']'(_)].
 seq(snoc(Beginning, Last))       --> ['['(_)], elem_group(Beginning), [':>'(_)], elems(Last), [']'(_)].
-seq(tape(Elements))          --> ['['(_)], (elems(Elements); {Elements = []}), [']'(_)]. % circular doubly linked list
+seq(lit(tape(Elements)))          --> ['['(_)], (elems(Elements); {Elements = []}), [']'(_)]. % circular doubly linked list
+seq(lit(tuple(Elements)))          --> ['{'(_)], (elems(Elements); {Elements = []}), ['}'(_)].
 
 
 
