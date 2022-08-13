@@ -1,4 +1,4 @@
-fn n fizbuzz :- 1 n range ('print fizzbuzz) map end
+fn n fizbuzz :: 1 n range ('print fizzbuzz) map end
 fn n 'print fizzbuzz ->
   case n 3 rem, n 5 rem :-
     | 0, 0 -> "FizzBuzz" out
@@ -7,7 +7,7 @@ fn n 'print fizzbuzz ->
     |-> n out
   end
 
-fn main :-
+fn main ::
   in to_int fizz_buzz
 end
 

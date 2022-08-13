@@ -2,8 +2,6 @@
 :- use_module('../frontend/parser').
 :- use_module(tape).
 
-% eval(AST, CTX, Tape, Res) :- eval(AST, CTX, Tape), Res = (CTX, Tape).
-
 eval([], CTX, Tape, (CTX, Tape)).
 
 % literals
@@ -17,7 +15,14 @@ eval([as([pat_var(Pat)])|Rest], CTX, Tape, Res) :-
     tape:get_v(Tape, Val),
     tape:del(Tape, NTape),
     atom_string(N, Pat),
-    eval(Rest, CTX.put([N=Val]), NTape, Res).
+    eval(Rest, CTX.put(N, Val), NTape, Res).
+
+eval([sym(Name)|Rest], CTX, Tape, Res) :-
+    atom_string(N, Name),
+    tape:ins(CTX.get(N), Tape, NTape),
+    eval(Rest, CTX, NTape, Res).
+
+% make if sugar for a case where the condition is true or false
 
 % run
 

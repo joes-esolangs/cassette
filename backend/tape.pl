@@ -1,12 +1,39 @@
 :- module(tape, [
+    % fix operators
+    op(700, xfx, @-),
+    op(500, xfy, +),
+    op(500, xfy, =),
+    op(500, xf, \),
+    op(500, fx, @),
+    op(500, fx, ->),
+    op(500, fx, <-),
+    (@-)/2,
     empty/1,
     set/3,
     ins/3,
     del/2,
     get_v/2,
     left/2,
-    right/2
+    right/2,
+    tis/2
 ]).
+
+% modify a tape
+% rename to @- operator
+@-(Res, !) :-
+    empty(T), Res = T.
+@-(Res, T+V) :-
+    ins(V, T, NT), Res = NT.
+@-(Res, T=V) :-
+    set(V, T, NT), Res = NT.
+@-(Res, \T) :-
+    del(T, NT), Res = NT.
+@-(Res, @T) :-
+    get_v(T, V), Res = V.
+@-(Res, ->T) :-
+    left(T, NT), Res = NT.
+tis(Res, <-T) :-
+    right(T, NT), Res = NT.
 
 empty(T) :- T = ([], []).
 

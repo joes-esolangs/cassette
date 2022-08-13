@@ -6,10 +6,10 @@ fn nfizz ->
     |-> to_string
   end
 
-fn fizz_buzz :-
+fn fizz_buzz ::
   range (nfizz outn) map 
 end
 
-fn main :-
+fn main ::
     in to_int fizz_buzz
 end
