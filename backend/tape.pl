@@ -15,7 +15,6 @@
     get_v/2,
     left/2,
     right/2,
-    tis/2
 ]).
 
 % modify a tape
@@ -32,7 +31,7 @@
     get_v(T, V), Res = V.
 @-(Res, ->T) :-
     left(T, NT), Res = NT.
-tis(Res, <-T) :-
+@-(Res, <-T) :-
     right(T, NT), Res = NT.
 
 empty(T) :- T = ([], []).
