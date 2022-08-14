@@ -68,13 +68,14 @@ tokenize([0'-, 0'>|T_i], ['->'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineN
 tokenize([0'i, 0'n|T_i], ['in'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0':, 0'>|T_i], [':>'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'<, 0':|T_i], ['<:'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'=, 0'>|T_i], ['=>'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'(|T_i], ['('(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0')|T_i], [')'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'{|T_i], ['{'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'}|T_i], ['}'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
-tokenize([0'p, 0'a, 0's, 0's|T_i], ['pass'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo). % a do nothing method. does nothing
-tokenize([0't, 0'r, 0'u, 0'e|T_i], ['true'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
-tokenize([0'f, 0'a, 0'l, 0's, 0'e|T_i], ['false'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'p, 0'a, 0's, 0's|T_i], [lit_t(pass, LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo). % a do nothing method. does nothing
+tokenize([0'y, 0'e, 0's|T_i], [lit_t(yes, LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'n, 0'o|T_i], [lit_t(no, LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0':|T_i], [':'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo). % module access
 tokenize([0'||T_i], ['|'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'w, 0'h, 0'e, 0'n|T_i], ['when'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).

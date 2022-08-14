@@ -61,8 +61,8 @@ if(if(Condition, If, Else)) --> ['if'(_)], (instructions(Condition); {Condition 
 mod(mod(Name, Body)) --> ['mod'(_), sym_t(Name, _)], block(Body, t).
 mod_acc(mod_acc(Mod, Item)) --> [sym_t(Mod, _), ':'(_), sym_t(Item, _)].
 
-pass(lit(pass)) --> ['pass'(_)].
-bool(lit(Bool)) --> ['true'(_)], {Bool = true}; ['false'(_)], {Bool = false}.
+pass(lit(pass)) --> [lit_t(pass, _)].
+bool(lit(Bool)) --> [lit_t(yes, _), {Bool = yes}; lit_t(no, _), {Bool = no}].
 
 % expr(Node) --> lit(Node); sym(Node); seq(Node); lam(Node); loop(Node);
 % if(Node); as(Node).
@@ -74,6 +74,5 @@ seq(cons(Head, Tail))       --> ['['(_)], elems(Head), ['<:'(_)], elem_group(Tai
 seq(snoc(Beginning, Last))       --> ['['(_)], elem_group(Beginning), [':>'(_)], elems(Last), [']'(_)].
 seq(lit(tape(Elements)))          --> ['['(_)], (elems(Elements); {Elements = []}), [']'(_)]. % circular doubly linked list
 seq(lit(tuple(Elements)))          --> ['{'(_)], (elems(Elements); {Elements = []}), ['}'(_)].
-
 
 
