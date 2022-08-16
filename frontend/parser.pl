@@ -26,7 +26,7 @@ lit_list([L|Rest])     --> (lit(L); sym(L)), (lit_list(Rest); {Rest = []}).
 block(Instructions, T)    --> ({T = s}, [':-'(_)]; ['::'(_)]), instructions(Instructions), ['end'(_)]; ['->'(_)], instruction(Instructions, all).
 
 pat_list([Pattern|Rest])         --> pattern(Pattern), ([','(_)], pat_list(Rest); {Rest = []}).
-pattern(pat_lit(Value))     --> [lit_t(Value, _)].
+pattern(pat_lit(Value))     --> lit(Value).
 pattern(pat_var(Name))     --> [sym_t(Name, _)].
 pattern(pat_cons(Head, Tail)) --> ['['(_)], pat_list(Head), ['<:'(_)], pattern(Tail), [']'(_)].
 pattern(pat_snoc(F, L)) --> ['['(_)], pattern(F), [':>'(_)], pat_list(L), [']'(_)].
