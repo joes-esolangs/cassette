@@ -12,7 +12,7 @@ pparse(Code) :-
 
 instructions([Node|Rest]) --> instruction(Node, all), (instructions(Rest, all); {Rest = []}).
 
-instruction(Node, all) --> fn(Node); lam(Node); lit(Node); sym(Node); seq(Node); pass(Node); tracer; as(Node); loop(Node); if(Node); case(Node); cond(Node); mod_acc(Node); mod(Node); bool(Node).
+instruction(Node, all) --> fn(Node); quote(Node); lit(Node); sym(Node); seq(Node); pass(Node); tracer; as(Node); loop(Node); if(Node); case(Node); cond(Node); mod_acc(Node); mod(Node); bool(Node).
 instructions([Node|Rest], Type) --> instruction(Node, Type), (instructions(Rest, Type); {Rest = []}).
 
 lit(lit(Value)) --> [lit_t(Value, _)].
@@ -34,23 +34,30 @@ pattern(pat_list(L))    --> ['['(_)], (pat_list(L); {L = []}), [']'(_)].
 pattern(pat_tuple(T))   --> ['{'(_)], (pat_list(T); {T = []}), ['}'(_)].
 pattern(pat_quote(Q))  --> ['('(_)], (pattern(pat_var(Q)); {Q = ""}), ['}'(_)]. % extract the code inside the quote to make a function
 
-branch(branch(Expressions, When, Instructions), case, NoPipe) --> ({NoPipe = true}; ['|'(_)]), pat_list(Expressions), (['when'(_)], instructions(When); {When = []}), ['->'(_)], instructions(Instructions, all).
-branch(branch(Expressions, Instructions), cond, NoPipe) --> ({NoPipe = true}; ['|'(_)]), instructions(Expressions), ['->'(_)], instructions(Instructions, all).
-branches([Branch|Rest], Type) --> ({Pipe = true; Pipe = false}, branch(Branch, Type, Pipe)), (branches(Rest, Type); {Rest = []}).
+branch(branch(Expressions, When, Instructions), case) --> pat_list(Expressions), (['when'(_)], instructions(When); {When = []}), ['->'(_)], instructions(Instructions, all).
+branch(branch(Expressions, Instructions), cond) --> instructions(Expressions), ['->'(_)], instructions(Instructions, all).
+branches([Branch|Rest], Type) --> (['|'(_)]; {true}), branch(Branch, Type), (['|'(_)], branches(Rest, Type); {Rest = []}).
 
+% convert multiple fns to a single one + case
 fn(fn(Name, Args, When, Body)) --> ['fn'(_)], (arg_list(Args); {Args = []}), [sym_t(Name, _)], (['when'(_)], instructions(When); {When = []}), block(Body, t).
 
 cond(cond(Branches, Else)) --> ['cond'(_)], branches(Branches, cond), (['|'(_), '->'(_)], instructions(Else, all); {Else = []}), ['end'(_)].
 
-case(case(Values, Branches, Else)) --> ['case'(_)], (elems(Values); {Values = []}), [':-'(_)], branches(Branches, case), (['|'(_), '->'(_)], instructions(Else, case); {Else = []}), ['end'(_)].
+case(case(Values, Branches, Else)) --> ['case'(_)], (elems(Values), [':-'(_)]; {Values = []}), branches(Branches, case), (['|'(_), '->'(_)], instructions(Else, case); {Else = []}), ['end'(_)].
 
 tracer --> [sym_t("$trace",_)], {trace}.
 
-lam(named_lam(Name, [as(Args)|Body])) --> ['lam'(_), '~'(_), sym_t(Name, _)], arg_list(Args), block(Body, s).
+% compile lam_case's to quotes+case
+lam_body([as(Args)|Body]) --> arg_list(Args), block(Body, s).
+lam_body([as(Args)|Body], diff) --> arg_list(Args), [':-'(_)], instructions(Body).
+lam_bodies([Body|Bodies]) --> (['|'(_)]; {true}), lam_body(Body, diff), (['|'(_)], lam_bodies(Bodies); {Bodies = []}).
+quote(named_quote(Name, Body)) --> ['lam'(_), '~'(_), sym_t(Name, _)], lam_body(Body).
+quote(named_quote_case(Name, Bodies)) --> ['lam'(_), '~'(_), sym_t(Name, _)], lam_bodies(Bodies), ['end'(_)].
 
-lam(quote([as(Args)|Body])) --> ['lam'(_)], arg_list(Args), block(Body, s).
-lam(quote(Body))  --> ['lam'(_)], instructions(Body), ['end'(_)].
-lam(quote(Body)) --> ['('(_)], instructions(Body), [')'(_)].
+quote(quote(Body)) --> ['lam'(_)], lam_body(Body).
+quote(quote(Body))  --> ['lam'(_)], instructions(Body), ['end'(_)].
+quote(quote_case(Bodies)) --> ['lam'(_)], lam_bodies(Bodies), ['end'(_)].
+quote(quote(Body)) --> ['('(_)], instructions(Body), [')'(_)].
 
 as(as(Args)) --> ['as'(_)], arg_list(Args), ['->'(_)].
 

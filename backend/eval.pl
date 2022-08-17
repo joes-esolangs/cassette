@@ -1,6 +1,7 @@
 :- module(eval, [eval/4, run/1, run_bare/1]).
 :- use_module('../frontend/parser').
 :- use_module(tape).
+:- use_module(unify).
 
 eval([], CTX, Tape, (CTX, Tape)).
 
@@ -11,11 +12,11 @@ eval([lit(Lit)|Rest], CTX, Tape, Res) :-
 
 % basic variables
 % TODO: add patterns and multiples variable decls
-eval([as([pat_var(Pat)])|Rest], CTX, Tape, Res) :-
+eval([as([Pat])|Rest], CTX, Tape, Res) :-
     Val @- @Tape,
     NTape @- \Tape,
-    atom_string(N, Pat),
-    eval(Rest, CTX.put(N, Val), NTape, Res).
+    unify(Val, Pat, CTX, NCTX),
+    eval(Rest, NCTX, NTape, Res).
 
 eval([sym(Name)|Rest], CTX, Tape, Res) :-
     atom_string(N, Name),

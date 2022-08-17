@@ -117,6 +117,7 @@ ident_type(Char, Type) :-
     Char \= 0'",
     Char \= 0',,
     Char \= 0':,
+    Char \= 0';,
     (code_type(Char, punct);
     (Type = first, code_type(Char, csymf)
     ;   code_type(Char, csym))).
