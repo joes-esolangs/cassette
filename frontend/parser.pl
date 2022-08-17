@@ -15,7 +15,7 @@ instructions([Node|Rest]) --> instruction(Node, all), (instructions(Rest, all); 
 instruction(Node, all) --> fn(Node); quote(Node); lit(Node); sym(Node); seq(Node); pass(Node); tracer; as(Node); loop(Node); if(Node); case(Node); cond(Node); mod_acc(Node); mod(Node); bool(Node).
 instructions([Node|Rest], Type) --> instruction(Node, Type), (instructions(Rest, Type); {Rest = []}).
 
-lit(lit(Value)) --> [lit_t(Value, _)].
+lit(lit(Value, Type)) --> [lit_t(Value, Type, _)].
 sym(sym(Name)) --> [sym_t(Name, _)].
 
 arg_list([Pattern|Rest]) --> pattern(Pattern), (arg_list(Rest); {Rest = []}).
@@ -79,7 +79,7 @@ elem_group([Node|Rest])     --> instruction(Node, all), (elem_group(Rest); {Rest
 elems([Node|Rest])          --> elem_group(Node), ([','(_)], elems(Rest); {Rest = []}).
 seq(cons(Head, Tail))       --> ['['(_)], elems(Head), ['<:'(_)], elem_group(Tail), [']'(_)].
 seq(snoc(Beginning, Last))       --> ['['(_)], elem_group(Beginning), [':>'(_)], elems(Last), [']'(_)].
-seq(lit(tape(Elements)))          --> ['['(_)], (elems(Elements); {Elements = []}), [']'(_)]. % circular doubly linked list
-seq(lit(tuple(Elements)))          --> ['{'(_)], (elems(Elements); {Elements = []}), ['}'(_)].
+seq(lit(tape(Elements), tape))          --> ['['(_)], (elems(Elements); {Elements = []}), [']'(_)]. % circular doubly linked list
+seq(lit(tuple(Elements), tuple))          --> ['{'(_)], (elems(Elements); {Elements = []}), ['}'(_)].
 
 

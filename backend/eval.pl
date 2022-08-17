@@ -6,8 +6,8 @@
 eval([], CTX, Tape, (CTX, Tape)).
 
 % literals
-eval([lit(Lit)|Rest], CTX, Tape, Res) :-
-    NTape @- Tape+Lit,
+eval([lit(Lit, Type)|Rest], CTX, Tape, Res) :-
+    NTape @- Tape+lit(Lit, Type),
     eval(Rest, CTX, NTape, Res).
 
 % basic variables
@@ -16,7 +16,7 @@ eval([as([Pat])|Rest], CTX, Tape, Res) :-
     Val @- @Tape,
     NTape @- \Tape,
     % FIXME: bug unifying two lits of the same type. maybe type literals in the lexer: int_lit, string_lit
-    unify(lit(Val), Pat, CTX, NCTX), !,
+    unify(Val, Pat, CTX, NCTX),
     eval(Rest, NCTX, NTape, Res).
 
 eval([sym(Name)|Rest], CTX, Tape, Res) :-
