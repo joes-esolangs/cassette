@@ -15,7 +15,8 @@ eval([lit(Lit)|Rest], CTX, Tape, Res) :-
 eval([as([Pat])|Rest], CTX, Tape, Res) :-
     Val @- @Tape,
     NTape @- \Tape,
-    unify(Val, Pat, CTX, NCTX),
+    % FIXME: bug unifying two lits of the same type. maybe type literals in the lexer: int_lit, string_lit
+    unify(lit(Val), Pat, CTX, NCTX), !,
     eval(Rest, NCTX, NTape, Res).
 
 eval([sym(Name)|Rest], CTX, Tape, Res) :-
