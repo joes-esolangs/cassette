@@ -1,6 +1,7 @@
 :- module(parser, [parse/2, pparse/1]).
 :- use_module(lexer).
 % TODO: for errors pass an error list through every clause.
+% IDEA: maybe infix/unary for the builtins
 
 parse(Code, AST) :-
     tokenize(Code, Out),
@@ -31,7 +32,7 @@ pattern(pat_lit(Value))     --> [lit_t(Value, _)].
 pattern(pat_var(Name))     --> [sym_t(Name, _)].
 pattern(pat_cons(Head, Tail)) --> ['['(_)], pat_list(Head), ['<:'(_)], pattern(Tail), [']'(_)].
 pattern(pat_snoc(F, L)) --> ['['(_)], pattern(F), [':>'(_)], pat_list(L), [']'(_)].
-pattern(pat_list(L))    --> ['['(_)], (pat_list(L); {L = []}), [']'(_)].
+pattern(pat_tape(L))    --> ['['(_)], (pat_list(L); {L = []}), [']'(_)].
 pattern(pat_tuple(T))   --> ['{'(_)], (pat_list(T); {T = []}), ['}'(_)].
 pattern(pat_quote(Q))  --> ['('(_)], (pattern(pat_var(Q)); {Q = ""}), ['}'(_)]. % extract the code inside the quote to make a function
 
@@ -48,7 +49,6 @@ case(case(Values, Branches, Else)) --> ['case'(_)], (elems(Values), [':-'(_)]; {
 
 tracer --> [sym_t("$trace",_)], {trace}.
 
-% compile lam_case's to quotes+case
 lam_body([as(Args)|Body]) --> arg_list(Args), block(Body, s).
 lam_body([as(Args)|Body], diff) --> arg_list(Args), [':-'(_)], instructions(Body).
 lam_bodies([Body|Bodies]) --> (['|'(_)]; {true}), lam_body(Body, diff), (['|'(_)], lam_bodies(Bodies); {Bodies = []}).
@@ -80,7 +80,7 @@ elem_group([Node|Rest])     --> instruction(Node, all), (elem_group(Rest); {Rest
 elems([Node|Rest])          --> elem_group(Node), ([','(_)], elems(Rest); {Rest = []}).
 seq(cons(Head, Tail))       --> ['['(_)], elems(Head), ['<:'(_)], elem_group(Tail), [']'(_)].
 seq(snoc(Beginning, Last))       --> ['['(_)], elem_group(Beginning), [':>'(_)], elems(Last), [']'(_)].
-seq(lit(tape(Elements)))          --> ['['(_)], (elems(Elements); {Elements = []}), [']'(_)]. % circular doubly linked list
-seq(lit(tuple(Elements)))          --> ['{'(_)], (elems(Elements); {Elements = []}), ['}'(_)].
+seq(tape(Elements))          --> ['['(_)], (elems(Elements); {Elements = []}), [']'(_)]. % circular doubly linked list
+seq(tuple(Elements))          --> ['{'(_)], (elems(Elements); {Elements = []}), ['}'(_)].
 
 

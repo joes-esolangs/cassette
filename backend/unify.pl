@@ -1,11 +1,17 @@
 :- module(unify, [unify/4, unify_list/4]).
 % unify patterns
-
 unify(Lit, pat_lit(Lit), CTX, CTX).
 
-unify(Expr, pat_var(Sym), CTX, NCTX) :-
+unify(lit(Expr), pat_var(Sym), CTX, NCTX) :-
     atom_string(N, Sym),
     NCTX = CTX.put(N, Expr).
+
+% FIXME: this unification exceeds stack limit
+unify(tape(Exprs), pat_tape(Pats), CTX, NCTX) :-
+    length(Exprs, L), length(Pats, L),
+    unify_list(Exprs, Pats, CTX, NCTX).
+
+unify(_, _, _, _) :- false.
 
 % unify list of patterns
 

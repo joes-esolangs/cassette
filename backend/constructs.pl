@@ -12,3 +12,6 @@ as_c([Pat|Rest], CTX, Tape, NCTX, NTape) :-
     as_c([Pat], CTX, Tape, CTX0, Tape0),
     as_c(Rest, CTX0, Tape0, NCTX, NTape).
 
+% TODO
+tape_c(Exprs, CTX, NCTX) :- true.
+
