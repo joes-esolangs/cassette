@@ -1,6 +1,6 @@
 :- module(parser, [parse/2, pparse/1]).
 :- use_module(lexer).
-% add pattern matching for arguments
+% TODO: for errors pass an error list through every clause.
 
 parse(Code, AST) :-
     tokenize(Code, Out),
@@ -15,7 +15,7 @@ instructions([Node|Rest]) --> instruction(Node, all), (instructions(Rest, all); 
 instruction(Node, all) --> fn(Node); quote(Node); lit(Node); sym(Node); seq(Node); pass(Node); tracer; as(Node); loop(Node); if(Node); case(Node); cond(Node); mod_acc(Node); mod(Node); bool(Node).
 instructions([Node|Rest], Type) --> instruction(Node, Type), (instructions(Rest, Type); {Rest = []}).
 
-lit(lit(Value, Type)) --> [lit_t(Value, Type, _)].
+lit(lit(Value)) --> [lit_t(Value, _)].
 sym(sym(Name)) --> [sym_t(Name, _)].
 
 arg_list([Pattern|Rest]) --> pattern(Pattern), (arg_list(Rest); {Rest = []}).
@@ -26,7 +26,8 @@ lit_list([L|Rest])     --> (lit(L); sym(L)), (lit_list(Rest); {Rest = []}).
 block(Instructions, T)    --> ({T = s}, [':-'(_)]; ['::'(_)]), instructions(Instructions), ['end'(_)]; ['->'(_)], instruction(Instructions, all).
 
 pat_list([Pattern|Rest])         --> pattern(Pattern), ([','(_)], pat_list(Rest); {Rest = []}).
-pattern(pat_lit(Value))     --> lit(Value).
+
+pattern(pat_lit(Value))     --> [lit_t(Value, _)].
 pattern(pat_var(Name))     --> [sym_t(Name, _)].
 pattern(pat_cons(Head, Tail)) --> ['['(_)], pat_list(Head), ['<:'(_)], pattern(Tail), [']'(_)].
 pattern(pat_snoc(F, L)) --> ['['(_)], pattern(F), [':>'(_)], pat_list(L), [']'(_)].
@@ -79,7 +80,7 @@ elem_group([Node|Rest])     --> instruction(Node, all), (elem_group(Rest); {Rest
 elems([Node|Rest])          --> elem_group(Node), ([','(_)], elems(Rest); {Rest = []}).
 seq(cons(Head, Tail))       --> ['['(_)], elems(Head), ['<:'(_)], elem_group(Tail), [']'(_)].
 seq(snoc(Beginning, Last))       --> ['['(_)], elem_group(Beginning), [':>'(_)], elems(Last), [']'(_)].
-seq(lit(tape(Elements), tape))          --> ['['(_)], (elems(Elements); {Elements = []}), [']'(_)]. % circular doubly linked list
-seq(lit(tuple(Elements), tuple))          --> ['{'(_)], (elems(Elements); {Elements = []}), ['}'(_)].
+seq(lit(tape(Elements)))          --> ['['(_)], (elems(Elements); {Elements = []}), [']'(_)]. % circular doubly linked list
+seq(lit(tuple(Elements)))          --> ['{'(_)], (elems(Elements); {Elements = []}), ['}'(_)].
 
 

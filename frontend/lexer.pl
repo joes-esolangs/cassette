@@ -38,14 +38,14 @@ tokenize([In|T_i], [Out|T_o], LineNo) :-
     consume_type(Next, digit, Remain, FractionDigits),
     append(WholeDigits, [0'.|FractionDigits], DigitList),
     number_codes(Value, DigitList),
-    Out = lit_t(Value, num, LineNo),
+    Out = lit_t(Value, LineNo),
     tokenize(Remain, T_o, LineNo).
 
 tokenize([In|T_i], [Out|T_o], LineNo) :-
     code_type(In, digit),
     consume_type([In|T_i], digit, Remain, DigitList),
     number_codes(Value, DigitList),
-    Out = lit_t(Value, num, LineNo),
+    Out = lit_t(Value, LineNo),
     tokenize(Remain, T_o, LineNo).
 
 % keywords
@@ -88,7 +88,7 @@ tokenize([0'~|T_i], ['~'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'"|T_i], [Out|T_o], LineNo) :-
     consume_until(T_i, 0'", Remain, Codes),
     string_codes(Value, Codes),
-    Out = lit_t(Value, string, LineNo),
+    Out = lit_t(Value, LineNo),
     tokenize(Remain, T_o, LineNo).
 
 % symbols
@@ -96,7 +96,7 @@ tokenize([0''|T_i], [Out|T_o], LineNo) :-
     consume_customtype([0''|T_i], ident_type, Remain, Codes),
     string_codes(Value, Codes),
     atom_string(A, Value),
-    Out = lit_t(A, atom, LineNo),
+    Out = lit_t(A, LineNo),
     tokenize(Remain, T_o, LineNo).
 
 % identifiers
