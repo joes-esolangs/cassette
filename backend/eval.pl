@@ -15,13 +15,10 @@ as_c([Pat|Rest], CTX, Tape, NCTX, NTape) :-
 % FIXME
 tape_c([], CTX, Tape, CTX, Tape).
 tape_c([Expr|Rest], CTX, Tape, NCTX, NTape) :-
-    [_|_] = Expr,
     Empty @- !,
     eval_list(Expr, CTX, Empty, CTX0, Tape0),
-    (   ([V],_) = Tape0, Val = V
-    ;   Val = Tape0),
-    Tape0 @- Tape+Val,
-    tape_c(Rest, CTX0, Tape0, NCTX, NTape).
+    Tape1 @- Tape+Tape0,
+    tape_c(Rest, CTX0, Tape1, NCTX, NTape).
 tape_c([Expr|Rest], CTX, Tape, NCTX, NTape) :-
     eval(Expr, CTX, Tape, CTX0, Tape0),
     tape_c(Rest, CTX0, Tape0, NCTX, NTape).
@@ -46,11 +43,10 @@ eval(tape(Exprs), CTX, Tape, NCTX, NTape) :-
 
 % FIXME
 % evaluating a list of instructions
+eval_list([], CTX, Tape, CTX, Tape).
 eval_list([I|Rest], CTX, Tape, NCTX, NTape) :-
     eval(I, CTX, Tape, CTX0, Tape0),
     eval_list(Rest, CTX0, Tape0, NCTX, NTape).
-eval_list(I, CTX, Tape, NCTX, NTape) :-
-    eval(I, CTX, Tape, NCTX, NTape).
 
 
 

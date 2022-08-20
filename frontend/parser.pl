@@ -75,7 +75,6 @@ bool(lit(Bool)) --> [lit_t(yes, _), {Bool = yes}; lit_t(no, _), {Bool = no}].
 % expr(Node) --> lit(Node); sym(Node); seq(Node); lam(Node); loop(Node);
 % if(Node); as(Node).
 
-elem_group(Node)     --> instruction(Node, all).
 elem_group([Node|Rest])     --> instruction(Node, all), (elem_group(Rest); {Rest = []}).
 elems([Node|Rest])          --> elem_group(Node), ([','(_)], elems(Rest); {Rest = []}).
 seq(cons(Head, Tail))       --> ['['(_)], elems(Head), ['<:'(_)], elem_group(Tail), [']'(_)].

@@ -7,6 +7,7 @@
     op(500, fx, @),
     op(500, fx, ->),
     op(500, fx, <-),
+    op(500, xfy, ++),
     (@-)/2,
     empty/1,
     set/3,
@@ -31,6 +32,7 @@
     left(T, NT), Res = NT.
 @-(Res, <-T) :-
     right(T, NT), Res = NT.
+@-(Res, T1++T2).
 
 empty(T) :- T = ([], []).
 
@@ -51,4 +53,4 @@ right((X, [H1|T2]), ([H1|X], T2)).
 right(([], []), ([], [])).
 right((X, []), RT) :- reverse(X, [H|T]), RT = ([H], T).
 
-
+concat(T1, T2, RT).
