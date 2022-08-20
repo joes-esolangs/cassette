@@ -1,9 +1,35 @@
-:- module(eval, [eval/5, eval_list/4, run/1, run_bare/1]).
+:- module(eval, [eval/5, eval_list/5]).
 :- use_module('../frontend/parser').
 :- use_module(tape).
-:- use_module(constructs).
+:- use_module(unify).
 
-% literals
+% constructs
+as_c([Pat], CTX, Tape, NCTX, NTape) :-
+    Val @- @Tape,
+    NTape @- \Tape,
+    unify(Val, Pat, CTX, NCTX).
+as_c([Pat|Rest], CTX, Tape, NCTX, NTape) :-
+    as_c([Pat], CTX, Tape, CTX0, Tape0),
+    as_c(Rest, CTX0, Tape0, NCTX, NTape).
+
+% FIXME
+tape_c([], CTX, Tape, CTX, Tape).
+tape_c([Expr|Rest], CTX, Tape, NCTX, NTape) :-
+    [_|_] = Expr,
+    Empty @- !,
+    eval_list(Expr, CTX, Empty, CTX0, Tape0),
+    (   ([V],_) = Tape0, Val = V
+    ;   Val = Tape0),
+    Tape0 @- Tape+Val,
+    tape_c(Rest, CTX0, Tape0, NCTX, NTape).
+tape_c([Expr|Rest], CTX, Tape, NCTX, NTape) :-
+    eval(Expr, CTX, Tape, CTX0, Tape0),
+    tape_c(Rest, CTX0, Tape0, NCTX, NTape).
+
+% make if sugar for a case where the condition is true or false
+%make cond sugar for a case with a bunch of when clauses
+
+% evalutation
 eval(lit(Lit), CTX, Tape, CTX, NTape) :-
     NTape @- Tape+Lit.
 
@@ -14,26 +40,17 @@ eval(sym(Name), CTX, Tape, CTX, NTape) :-
     atom_string(N, Name),
     NTape @- Tape+CTX.get(N).
 
-% TODO
-eval(tape(Exprs), CTX, Tape, CTX, NTape) :- true.
+eval(tape(Exprs), CTX, Tape, NCTX, NTape) :-
+    tape_c(Exprs, CTX, Tape, NCTX, MTape),
+    NTape @- Tape+MTape.
 
-% make if sugar for a case where the condition is true or false
-
+% FIXME
 % evaluating a list of instructions
-eval_list([], CTX, Tape, (CTX, Tape)).
-eval_list([I|Rest], CTX, Tape, Res) :-
-    eval(I, CTX, Tape, NCTX, NTape),
-    eval_list(Rest, NCTX, NTape, Res).
+eval_list([I|Rest], CTX, Tape, NCTX, NTape) :-
+    eval(I, CTX, Tape, CTX0, Tape0),
+    eval_list(Rest, CTX0, Tape0, NCTX, NTape).
+eval_list(I, CTX, Tape, NCTX, NTape) :-
+    eval(I, CTX, Tape, NCTX, NTape).
 
-% run predicates
-run(Code) :-
-    parse(Code, AST),
-    run_bare(AST).
-
-run_bare(AST) :-
-    Tape @- !, CTX = ctx{},
-    eval_list(AST, CTX, Tape, Res),
-    (ECTX, ETape) = Res,
-    print_term(ETape, []), nl, print_term(ECTX, []).
 
 
