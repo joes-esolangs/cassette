@@ -35,7 +35,7 @@ eval(sym(Name), CTX, Tape, NCTX, NTape) :-
     atom_string(N, Name),
     get_assoc(N, CTX, fn(AST, FCTX)),
     eval_list(AST, FCTX, Tape, CTX0, NTape),
-    merge_ctx(FCTX, CTX0, NCTX).
+    merge_ctx(CTX, CTX0, NCTX).
 eval(sym(Name), CTX, Tape, CTX, NTape) :-
     atom_string(N, Name),
     get_assoc(N, CTX, V),

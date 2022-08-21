@@ -24,7 +24,7 @@
 
 is_tape((Left, Right)) :- is_list(Left), is_list(Right).
 
-to_tape(List, Tape) :- is_list(List), Tape = (List, []).
+to_tape(List, (List, [])) :- is_list(List).
 
 to_list((L, R), List) :-
     reverse(R, R_rev),
@@ -54,7 +54,7 @@ set(V, ([_|T1], T2), ([V|T1], T2)).
 ins(V, (T1, T2), ([V|T1], T2)).
 
 del(([], _), _) :- false.
-del(([_], T2), RT) :- reverse(T2, L), RT = (L, []).
+del(([_], T2), (L, [])) :- reverse(T2, L).
 del(([_|T1], T2), (T1, T2)).
 
 get_v(([], _), _) :- false.
@@ -62,15 +62,14 @@ get_v(([V|_], _), V).
 
 left(([], X), ([], X)).
 left(([X], []), ([X], [])).
-left(([X], [H|T]), RT) :- reverse([H|T], L), RT = (L, [X]).
+left(([X], [H|T]), (L, [X])) :- reverse([H|T], L).
 left(([H1, H2|T1], T2), ([H2|T1], [H1|T2])).
 
 right((X, [H1|T2]), ([H1|X], T2)).
 right(([], []), ([], [])).
-right((X, []), RT) :- reverse(X, [H|T]), RT = ([H], T).
+right((X, []), ([H], T)) :- reverse(X, [H|T]).
 
-cat(([XH|XL], XR), ([YH|YL], YR), RT) :-
-    reverse(XL, XL_rev),
-    append(XR, XL_rev, X),
-    append(X, [YH|YR], XY),
-    RT = ([XH|YL], XY).
+cat((XL, XR), (YL, YR), (XY, YR)) :-
+    reverse(XR, XR_rev),
+    append(XL, XR_rev, X),
+    append(X, YL, XY).
