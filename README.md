@@ -24,10 +24,31 @@ Even though its a tape language, it works very much like a stack lang, using the
 
 reversing a tape:
 ```elixir
-fn reverse [] -> [] 
-fn reverse [x <: xs] -> [xs reverse :> x] % examples of cons and snoc for pattern matching
+fn [] reverse -> [] 
+fn [x <: xs] reverse -> [xs reverse :> x] % examples of cons and snoc for pattern matching
 
 fn main ::
     [1, 2, 3] reverse out
 end
+```
+
+common stack functions:
+```elixir
+fn x dup :: x x end
+fn x y swap :: y x end
+fn x y pop -> x
+
+21 dup
+5 6 swap
+7 8 9 pop
+```
+or as quotes
+```
+(as x -> x x) as dup ->
+(as x y -> y x) as swap ->
+(as x y -> x) as pop ->
+
+21 dup ~> % ~> evaluates a quote on the tape
+5 6 swap ~>
+7 8 9 pop ~>
 ```
