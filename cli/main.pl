@@ -1,5 +1,5 @@
 :- module(main, [main/1]).
-:- use_module("../backend/run").
+:- use_module('../backend/run').
 % compile with swipl -o cassette.exe -c main.pl --goal=main
 
 % FIXME

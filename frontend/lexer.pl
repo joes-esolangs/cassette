@@ -62,7 +62,6 @@ tokenize([0'l, 0'a, 0'm, 0'b|T_i], ['lam'(LineNo)|T_o], LineNo) :- tokenize(T_i,
 tokenize([0'l, 0'a, 0'm|T_i], ['lam'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'a, 0's|T_i], ['as'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'e, 0'n, 0'd|T_i], ['end'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
-tokenize([0':, 0'-|T_i], [':-'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0':, 0':|T_i], ['::'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'-, 0'>|T_i], ['->'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'i, 0'n|T_i], ['in'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).

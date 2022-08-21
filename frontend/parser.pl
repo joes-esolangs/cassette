@@ -25,7 +25,7 @@ lit_list([L|Rest])     --> (lit(L); sym(L)), (lit_list(Rest); {Rest = []}).
 % expr_list([Expr|Rest]) --> instruction(Expr, all), (expr_list(Rest);
 % {Rest = []}).
 
-block(Instructions, T)    --> ({T = s}, [':-'(_)]; ['::'(_)]), instructions(Instructions), ['end'(_)].
+block(Instructions, T)    --> ({T = s}, ['->'(_)]; ['::'(_)]), instructions(Instructions), ['end'(_)].
 block([Instruction], _)   --> ['->'(_)], instruction(Instruction).
 
 pat_list([Pattern|Rest])         --> arg_list(Pattern), ([','(_)], pat_list(Rest); {Rest = []}).
@@ -47,18 +47,18 @@ fn(fn(Name, Args, When, Body)) --> ['fn'(_)], (arg_list(Args); {Args = []}), [sy
 
 cond(cond(Branches, Else)) --> ['cond'(_)], branches(Branches, cond), (['|'(_), '->'(_)], instructions(Else); {Else = []}), ['end'(_)].
 
-case(case(Values, Branches, Else)) --> ['case'(_)], (elems(Values), [':-'(_)]; {Values = []}), branches(Branches, case), (['|'(_), '->'(_)], instructions(Else); {Else = []}), ['end'(_)].
+case(case(Values, Branches, Else)) --> ['case'(_)], (elems(Values), ['->'(_)]; {Values = []}), branches(Branches, case), (['|'(_), '->'(_)], instructions(Else); {Else = []}), ['end'(_)].
 
 tracer --> [sym_t("$trace",_)], {trace}; [sym_t("$gtrace",_)], {gtrace}.
 
 lam_body([as(Args)|Body]) --> arg_list(Args), block(Body, s).
-lam_body([as(Args)|Body], diff) --> arg_list(Args), [':-'(_)], instructions(Body).
+lam_body([as(Args)|Body], diff) --> arg_list(Args), ['->'(_)], instructions(Body).
 lam_bodies([Body|Bodies]) --> (['|'(_)]; {true}), lam_body(Body, diff), (['|'(_)], lam_bodies(Bodies); {Bodies = []}).
 quote(named_quote(Name, Body)) --> ['lam'(_), '~'(_), sym_t(Name, _)], lam_body(Body).
 quote(named_quote_case(Name, Bodies)) --> ['lam'(_), '~'(_), sym_t(Name, _)], lam_bodies(Bodies), ['end'(_)].
 
-quote(quote(Body)) --> ['lam'(_)], lam_body(Body).
-quote(quote(Body))  --> ['lam'(_)], instructions(Body), ['end'(_)].
+% quote(quote(Body)) --> ['lam'(_)], lam_body(Body).
+% quote(quote(Body)) --> ['lam'(_)], instructions(Body), ['end'(_)].
 quote(quote_case(Bodies)) --> ['lam'(_)], lam_bodies(Bodies), ['end'(_)].
 quote(quote(Body)) --> ['('(_)], instructions(Body), [')'(_)].
 

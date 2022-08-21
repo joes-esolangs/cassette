@@ -1,6 +1,6 @@
 :- module(run, [run/1, run_bare/1, debugc/1]).
 :- use_module(eval).
-:- use_module("../frontend/parser").
+:- use_module('../frontend/parser').
 :- use_module(tape).
 
 % run predicates

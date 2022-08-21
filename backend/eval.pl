@@ -1,5 +1,4 @@
 :- module(eval, [eval/5, eval_list/5]).
-:- use_module('../frontend/parser').
 :- use_module(tape).
 :- use_module(unify).
 :- use_module(prelude).
