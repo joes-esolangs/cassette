@@ -1,7 +1,7 @@
 fn main :: 
     lam~fact
-        | 0 :- 1
-        | n :- n n 1 - fact *
+        | 0 -> 1
+        | n -> n n 1 - fact *
     end as fact
     in to_int fact ~> out
 end

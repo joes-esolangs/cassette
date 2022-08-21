@@ -1,5 +1,5 @@
 fn n m nfib ::
-  [0, 1] loop n :- dup m take sum push end head 
+  [0, 1] loop n -> dup m take sum push end head 
 end
 
 fn main ::
