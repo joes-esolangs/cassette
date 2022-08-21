@@ -43,7 +43,7 @@ fn x y pop -> x
 7 8 9 pop
 ```
 or as quotes
-```
+```elixir
 (as x -> x x) as dup ->
 (as x y -> y x) as swap ->
 (as x y -> x) as pop ->
