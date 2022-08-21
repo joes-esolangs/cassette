@@ -1,14 +1,18 @@
-# cassette
-Cassette is a new, evolutionary programming based off of brainf**k, being almost entirely different except for the tapes. Cassette is dynamically typed, homoiconic, and metaprogrammable. 
+# Cassette
+Cassette is a new programming based off of the languages metatape, elixir, and joy, evolving syntax and semantics from each. Cassette is 
+- Dynamically typed
+- Interpreted (for now)
+- Homoiconic 
+- Metaprogrammable (in the future).
  
 # how does it work? 
-If you are familier with stack langs, such as forth, joy, factor, etc, you know that the whole program is a stack. In cassette its very similar, but instead it uses a tape, which is a [Circular Doubly Linked List](https://en.wikipedia.org/wiki/Doubly_linked_list#Circular_doubly_linked_lists). Internally, Cassette represents it with two stacks (look into [tape.pl](backend/tape.pl) for more detail).
+If you are familier with stack langs, such as Forth, Joy, or Factor, it is common knowledge that the whole program is a stack. In Cassette it's very similar, but instead it uses a tape, which is a [Circular Doubly Linked List](https://en.wikipedia.org/wiki/Doubly_linked_list#Circular_doubly_linked_lists). Internally, Cassette represents it with two stacks (look into [tape.pl](backend/tape.pl) for more details).
  
-This means that we can shift this tape `left` and `right`. Take for instance this tape:
+This means that we can shift a tape `left` or `right`. Take for instance this tape:
  
 `1 2 3 4 5`
 
-If we shift the tape left, we get the new tape.
+If we shift the tape left, we get this new tape.
  
 `2 3 4 5 1`
  
