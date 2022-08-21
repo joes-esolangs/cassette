@@ -13,7 +13,7 @@ pparse(Code) :-
 
 instructions([Node|Rest]) --> instruction(Node, all), (instructions(Rest, all); {Rest = []}).
 
-instruction(Node, all) --> fn(Node); quote(Node); lit(Node); sym(Node); seq(Node); pass(Node); tracer; as(Node); loop(Node); if(Node); case(Node); cond(Node); mod_acc(Node); mod(Node); bool(Node).
+instruction(Node, all) --> fn(Node); quote(Node); lit(Node); sym(Node); seq(Node); tracer; as(Node); loop(Node); if(Node); case(Node); cond(Node); mod_acc(Node); mod(Node); bool(Node).
 instructions([Node|Rest], Type) --> instruction(Node, Type), (instructions(Rest, Type); {Rest = []}).
 
 lit(lit(Value)) --> [lit_t(Value, _)].
@@ -47,7 +47,7 @@ cond(cond(Branches, Else)) --> ['cond'(_)], branches(Branches, cond), (['|'(_), 
 
 case(case(Values, Branches, Else)) --> ['case'(_)], (elems(Values), [':-'(_)]; {Values = []}), branches(Branches, case), (['|'(_), '->'(_)], instructions(Else, case); {Else = []}), ['end'(_)].
 
-tracer --> [sym_t("$trace",_)], {trace}.
+tracer --> [sym_t("$trace",_)], {trace}; [sym_t("$gtrace",_)], {gtrace}.
 
 lam_body([as(Args)|Body]) --> arg_list(Args), block(Body, s).
 lam_body([as(Args)|Body], diff) --> arg_list(Args), [':-'(_)], instructions(Body).
@@ -69,7 +69,6 @@ if(if(Condition, If, Else)) --> ['if'(_)], (instructions(Condition); {Condition 
 mod(mod(Name, Body)) --> ['mod'(_), sym_t(Name, _)], block(Body, t).
 mod_acc(mod_acc(Mod, Item)) --> [sym_t(Mod, _), ':'(_), sym_t(Item, _)].
 
-pass(lit(pass)) --> [lit_t(pass, _)].
 bool(lit(Bool)) --> [lit_t(yes, _), {Bool = yes}; lit_t(no, _), {Bool = no}].
 
 % expr(Node) --> lit(Node); sym(Node); seq(Node); lam(Node); loop(Node);

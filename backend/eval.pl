@@ -2,11 +2,12 @@
 :- use_module('../frontend/parser').
 :- use_module(tape).
 :- use_module(unify).
+:- use_module(prelude).
 
 % constructs
+as_c([], CTX, Tape, CTX, Tape).
 as_c([Pat], CTX, Tape, NCTX, NTape) :-
-    (   Val @- @Tape, NTape @- \Tape
-    ;   throw("error evaluating 'as'")),
+    NTape @- Tape^Val,
     unify(Val, Pat, CTX, NCTX).
 as_c([Pat|Rest], CTX, Tape, NCTX, NTape) :-
     as_c([Pat], CTX, Tape, CTX0, Tape0),
@@ -26,10 +27,12 @@ quote_c(AST, (AST, [])).
 
 % evalutation
 eval(sym("~>"), CTX, Tape, NCTX, NTape) :-
-    (   quote(Quote) @- @Tape, Tape0 @- \Tape
+    (   Tape0 @- Tape^quote(Quote)
     ;   throw("value is not a quote or there isn't enough values")),
     to_list(Quote, Ins),
     eval_list(Ins, CTX, Tape0, NCTX, NTape).
+
+eval(sym("pass"), CTX, Tape, CTX, Tape).
 
 eval(sym(Name), CTX, Tape, NCTX, NTape) :-
     atom_string(N, Name),
@@ -40,6 +43,9 @@ eval(sym(Name), CTX, Tape, CTX, NTape) :-
     atom_string(N, Name),
     get_assoc(N, CTX, V),
     NTape @- Tape+V.
+
+eval(sym(Name), CTX, Tape, NCTX, NTape) :-
+    prelude(Name, CTX, Tape, NCTX, NTape).
 
 eval(lit(Lit), CTX, Tape, CTX, NTape) :-
     NTape @- Tape+Lit.
@@ -54,6 +60,11 @@ eval(tape(Exprs), CTX, Tape, NCTX, NTape) :-
 eval(quote(AST), CTX, Tape, CTX, NTape) :-
     quote_c(AST, Quote),
     NTape @- Tape+quote(Quote).
+
+eval(fn(Name, Args, _When, Body), CTX, Tape, NCTX, Tape) :-
+    AST = [as(Args)|Body],
+    atom_string(N, Name),
+    put_assoc(N, CTX, fn(AST, CTX), NCTX).
 
 % FIXME
 % evaluating a list of instructions

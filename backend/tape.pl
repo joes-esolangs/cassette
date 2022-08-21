@@ -8,6 +8,7 @@
     op(500, fx, ->),
     op(500, fx, <-),
     op(500, xfy, ++),
+    op(500, xfy, ^),
     is_tape/1,
     to_tape/2,
     to_list/2,
@@ -19,7 +20,8 @@
     get_v/2,
     left/2,
     right/2,
-    cat/3
+    cat/3,
+    pop/3
 ]).
 
 is_tape((Left, Right)) :- is_list(Left), is_list(Right).
@@ -46,6 +48,8 @@ to_list((L, R), List) :-
     right(T, Res).
 @-(Res, T1++T2) :-
     cat(T1, T2, Res).
+@-(Res, T^V) :-
+    pop(T, V, Res).
 
 empty(T) :- T = ([], []).
 
@@ -73,3 +77,7 @@ cat((XL, XR), (YL, YR), (XY, YR)) :-
     reverse(XR, XR_rev),
     append(XL, XR_rev, X),
     append(X, YL, XY).
+
+pop(T, V, RT) :-
+    V @- @T,
+    RT @- \T.

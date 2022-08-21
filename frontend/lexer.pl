@@ -73,7 +73,6 @@ tokenize([0'(|T_i], ['('(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0')|T_i], [')'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'{|T_i], ['{'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'}|T_i], ['}'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
-tokenize([0'p, 0'a, 0's, 0's|T_i], [lit_t(pass, LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo). % a do nothing method. does nothing
 tokenize([0'y, 0'e, 0's|T_i], [lit_t(yes, LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'n, 0'o|T_i], [lit_t(no, LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0':|T_i], [':'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo). % module access
@@ -93,7 +92,7 @@ tokenize([0'"|T_i], [Out|T_o], LineNo) :-
 
 % symbols
 tokenize([0''|T_i], [Out|T_o], LineNo) :-
-    consume_customtype([0''|T_i], ident_type, Remain, Codes),
+    consume_customtype([0''|T_i], ident_type, Remain, [_|Codes]),
     string_codes(Value, Codes),
     atom_string(A, Value),
     Out = lit_t(A, LineNo),
