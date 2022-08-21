@@ -14,6 +14,7 @@ pparse(Code) :-
 instructions([Node|Rest]) --> instruction(Node, all), (instructions(Rest, all); {Rest = []}).
 
 instruction(Node, all) --> fn(Node); quote(Node); lit(Node); sym(Node); seq(Node); tracer; as(Node); loop(Node); if(Node); case(Node); cond(Node); mod_acc(Node); mod(Node); bool(Node).
+instruction(Node) --> instruction(Node, all).
 instructions([Node|Rest], Type) --> instruction(Node, Type), (instructions(Rest, Type); {Rest = []}).
 
 lit(lit(Value)) --> [lit_t(Value, _)].
@@ -24,7 +25,8 @@ lit_list([L|Rest])     --> (lit(L); sym(L)), (lit_list(Rest); {Rest = []}).
 % expr_list([Expr|Rest]) --> instruction(Expr, all), (expr_list(Rest);
 % {Rest = []}).
 
-block(Instructions, T)    --> ({T = s}, [':-'(_)]; ['::'(_)]), instructions(Instructions), ['end'(_)]; ['->'(_)], instruction(Instructions, all).
+block(Instructions, T)    --> ({T = s}, [':-'(_)]; ['::'(_)]), instructions(Instructions), ['end'(_)].
+block([Instruction], _)   --> ['->'(_)], instruction(Instruction).
 
 pat_list([Pattern|Rest])         --> arg_list(Pattern), ([','(_)], pat_list(Rest); {Rest = []}).
 
@@ -43,9 +45,9 @@ branches([Branch|Rest], Type) --> (['|'(_)]; {true}), branch(Branch, Type), (['|
 % convert multiple fns to a single one + case
 fn(fn(Name, Args, When, Body)) --> ['fn'(_)], (arg_list(Args); {Args = []}), [sym_t(Name, _)], (['when'(_)], instructions(When); {When = []}), block(Body, t).
 
-cond(cond(Branches, Else)) --> ['cond'(_)], branches(Branches, cond), (['|'(_), '->'(_)], instructions(Else, all); {Else = []}), ['end'(_)].
+cond(cond(Branches, Else)) --> ['cond'(_)], branches(Branches, cond), (['|'(_), '->'(_)], instructions(Else); {Else = []}), ['end'(_)].
 
-case(case(Values, Branches, Else)) --> ['case'(_)], (elems(Values), [':-'(_)]; {Values = []}), branches(Branches, case), (['|'(_), '->'(_)], instructions(Else, case); {Else = []}), ['end'(_)].
+case(case(Values, Branches, Else)) --> ['case'(_)], (elems(Values), [':-'(_)]; {Values = []}), branches(Branches, case), (['|'(_), '->'(_)], instructions(Else); {Else = []}), ['end'(_)].
 
 tracer --> [sym_t("$trace",_)], {trace}; [sym_t("$gtrace",_)], {gtrace}.
 
@@ -60,7 +62,7 @@ quote(quote(Body))  --> ['lam'(_)], instructions(Body), ['end'(_)].
 quote(quote_case(Bodies)) --> ['lam'(_)], lam_bodies(Bodies), ['end'(_)].
 quote(quote(Body)) --> ['('(_)], instructions(Body), [')'(_)].
 
-as(as(Args)) --> ['as'(_)], arg_list(Args), ['->'(_)].
+as(as(Args)) --> ['as'(_)], (arg_list(Args); {Args = []}), ['->'(_)].
 
 loop(loop(Range, Body)) --> ['loop'(_)], lit_list(Range), {Range = [_]; Range = [_,_]}, block(Body, s).
 

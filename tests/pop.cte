@@ -1,0 +1,2 @@
+fn x y pop -> x 
+7 8 9 pop
