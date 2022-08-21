@@ -8,8 +8,9 @@ run(Code) :-
     run_bare(AST).
 
 run_bare(AST) :-
-    Tape @- !, CTX = ctx{},
-    eval_list(AST, CTX, Tape, ECTX, ETape),
+    Tape @- !, empty_assoc(CTX),
+    eval_list(AST, CTX, Tape, NCTX, ETape),
+    assoc_to_list(NCTX, ECTX),
     print_term(ETape, []), nl, print_term(ECTX, []).
 
 debugc(Code) :-

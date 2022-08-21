@@ -8,6 +8,9 @@
     op(500, fx, ->),
     op(500, fx, <-),
     op(500, xfy, ++),
+    is_tape/1,
+    to_tape/2,
+    to_list/2,
     (@-)/2,
     empty/1,
     set/3,
@@ -15,24 +18,34 @@
     del/2,
     get_v/2,
     left/2,
-    right/2
+    right/2,
+    cat/3
 ]).
 
+is_tape((Left, Right)) :- is_list(Left), is_list(Right).
+
+to_tape(List, Tape) :- is_list(List), Tape = (List, []).
+
+to_list((L, R), List) :-
+    reverse(R, R_rev),
+    append(L, R_rev, List).
+
 @-(Res, !) :-
-    empty(T), Res = T.
+    empty(Res).
 @-(Res, T+V) :-
-    ins(V, T, NT), Res = NT.
+    ins(V, T, Res).
 @-(Res, T=V) :-
-    set(V, T, NT), Res = NT.
+    set(V, T, Res).
 @-(Res, \T) :-
-    del(T, NT), Res = NT.
+    del(T, Res).
 @-(Res, @T) :-
-    get_v(T, V), Res = V.
+    get_v(T, Res).
 @-(Res, ->T) :-
-    left(T, NT), Res = NT.
+    left(T, Res).
 @-(Res, <-T) :-
-    right(T, NT), Res = NT.
-@-(Res, T1++T2).
+    right(T, Res).
+@-(Res, T1++T2) :-
+    cat(T1, T2, Res).
 
 empty(T) :- T = ([], []).
 
@@ -40,8 +53,11 @@ set(V, ([_|T1], T2), ([V|T1], T2)).
 
 ins(V, (T1, T2), ([V|T1], T2)).
 
-del(([_|Tl], T2), (Tl, T2)).
+del(([], _), _) :- false.
+del(([_], T2), RT) :- reverse(T2, L), RT = (L, []).
+del(([_|T1], T2), (T1, T2)).
 
+get_v(([], _), _) :- false.
 get_v(([V|_], _), V).
 
 left(([], X), ([], X)).
@@ -53,4 +69,8 @@ right((X, [H1|T2]), ([H1|X], T2)).
 right(([], []), ([], [])).
 right((X, []), RT) :- reverse(X, [H|T]), RT = ([H], T).
 
-concat(T1, T2, RT).
+cat(([XH|XL], XR), ([YH|YL], YR), RT) :-
+    reverse(XL, XL_rev),
+    append(XR, XL_rev, X),
+    append(X, [YH|YR], XY),
+    RT = ([XH|YL], XY).
