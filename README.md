@@ -27,7 +27,7 @@ Even though its a tape language, it works very much like a stack lang, using the
 # examples
 
 reversing a tape:
-```elixir
+```erlang
 fn [] reverse -> [] 
 fn [x <: xs] reverse -> [xs reverse :> x] % examples of cons and snoc for pattern matching
 
@@ -37,7 +37,7 @@ end
 ```
 
 common stack functions:
-```elixir
+```erlang
 fn x dup :: x x end
 fn x y swap :: y x end
 fn x y pop -> x
@@ -47,7 +47,7 @@ fn x y pop -> x
 7 8 9 pop
 ```
 or as quotes
-```elixir
+```erlang
 (as x -> x x) as dup ->
 (as x y -> y x) as swap ->
 (as x y -> x) as pop ->
