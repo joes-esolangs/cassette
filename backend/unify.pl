@@ -6,7 +6,7 @@ unify(Lit, pat_lit(Lit), CTX, CTX).
 % TODO: make non linear. if sym is already in ctx, use its value
 unify(Expr, pat_var(Sym), CTX, NCTX) :-
     atom_string(N, Sym),
-    put_assoc(N, CTX, Expr, NCTX).
+    NCTX = CTX.put(N, Expr).
 
 % FIXME: make it unify better
 unify(tape(([fn(Expr, FCTX)], _)), pat_tape([Pat]), CTX, NCTX) :-

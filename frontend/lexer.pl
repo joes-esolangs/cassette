@@ -26,8 +26,8 @@ tokenize([0'%|T], Out, LineNo) :-
     tokenize(Remain, Out, NextLineNo).
 
 % block comments dont work
-tokenize([0'%, 0'%|T], Out, LineNo) :-
-    consume_until(T, [0'%, 0'%], Remain, _),
+tokenize([0';, 0'%|T], Out, LineNo) :-
+    consume_until(T, [0'%, 0';], Remain, _),
     NextLineNo is LineNo + 1, !,
     tokenize(Remain, Out, NextLineNo).
 
@@ -58,20 +58,17 @@ tokenize([0'i, 0'f|T_i], ['if'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineN
 tokenize([0'e, 0'l, 0's, 0'e|T_i], ['else'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'm, 0'o, 0'd|T_i], ['mod'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'u, 0's, 0'e|T_i], ['use'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'i, 0'm, 0'p, 0'o, 0'r, 0't|T_i], ['import'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'l, 0'a, 0'm, 0'b|T_i], ['lam'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'l, 0'a, 0'm|T_i], ['lam'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'a, 0's|T_i], ['as'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'e, 0'n, 0'd|T_i], ['end'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0':, 0':|T_i], ['::'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'-, 0'>|T_i], ['->'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
-tokenize([0'i, 0'n|T_i], ['in'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0':, 0'>|T_i], [':>'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'<, 0':|T_i], ['<:'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
-tokenize([0'=, 0'>|T_i], ['=>'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'(|T_i], ['('(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0')|T_i], [')'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
-tokenize([0'{|T_i], ['{'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
-tokenize([0'}|T_i], ['}'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'y, 0'e, 0's|T_i], [lit_t(yes, LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'n, 0'o|T_i], [lit_t(no, LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0':|T_i], [':'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo). % module access

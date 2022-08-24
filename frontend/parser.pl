@@ -22,8 +22,6 @@ sym(sym(Name)) --> [sym_t(Name, _)].
 
 arg_list([Pattern|Rest]) --> pattern(Pattern), (arg_list(Rest); {Rest = []}).
 lit_list([L|Rest])     --> (lit(L); sym(L)), (lit_list(Rest); {Rest = []}).
-% expr_list([Expr|Rest]) --> instruction(Expr, all), (expr_list(Rest);
-% {Rest = []}).
 
 block(Instructions, T)    --> ({T = s}, ['->'(_)]; ['::'(_)]), instructions(Instructions), ['end'(_)].
 block([Instruction], _)   --> ['->'(_)], instruction(Instruction).
@@ -35,7 +33,6 @@ pattern(pat_var(Name))     --> [sym_t(Name, _)].
 pattern(pat_cons(Head, Tail)) --> ['['(_)], pat_list(Head), ['<:'(_)], pattern(Tail), [']'(_)].
 pattern(pat_snoc(F, L)) --> ['['(_)], pattern(F), [':>'(_)], pat_list(L), [']'(_)].
 pattern(pat_tape(L))    --> ['['(_)], (pat_list(L); {L = []}), [']'(_)].
-pattern(pat_tuple(T))   --> ['{'(_)], (pat_list(T); {T = []}), ['}'(_)].
 pattern(pat_quote(Q))  --> ['('(_)], (pattern(pat_var(Q)); {Q = ""}), ['}'(_)]. % extract the code inside the quote to make a function
 
 branch(branch(Expressions, When, Instructions), case) --> pat_list(Expressions), (['when'(_)], instructions(When); {When = []}), ['->'(_)], instructions(Instructions, all).
@@ -70,17 +67,15 @@ if(if(Condition, If, Else)) --> ['if'(_)], (instructions(Condition); {Condition 
 
 mod(mod(Name, Body)) --> ['mod'(_), sym_t(Name, _)], block(Body, t).
 mod_acc(mod_acc(Mod, Item)) --> [sym_t(Mod, _), ':'(_), sym_t(Item, _)].
+% TODO: parse impors and use
 
 bool(lit(Bool)) --> [lit_t(yes, _), {Bool = yes}; lit_t(no, _), {Bool = no}].
-
-% expr(Node) --> lit(Node); sym(Node); seq(Node); lam(Node); loop(Node);
-% if(Node); as(Node).
 
 elem_group([Node|Rest])     --> instruction(Node, all), (elem_group(Rest); {Rest = []}).
 elems([Node|Rest])          --> elem_group(Node), ([','(_)], elems(Rest); {Rest = []}).
 seq(cons(Head, Tail))       --> ['['(_)], elems(Head), ['<:'(_)], elem_group(Tail), [']'(_)].
 seq(snoc(Beginning, Last))       --> ['['(_)], elem_group(Beginning), [':>'(_)], elems(Last), [']'(_)].
 seq(tape(Elements))          --> ['['(_)], (elems(Elements); {Elements = []}), [']'(_)]. % circular doubly linked list
-seq(tuple(Elements))          --> ['{'(_)], (elems(Elements); {Elements = []}), ['}'(_)].
+
 
 
