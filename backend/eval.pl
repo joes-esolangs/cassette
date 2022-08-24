@@ -1,7 +1,7 @@
 :- module(eval, [eval/5, eval_list/5]).
 :- use_module(tape).
 :- use_module(unify).
-:- use_module(prelude).
+:- use_module(builtins).
 
 % constructs
 as_c([], CTX, Tape, CTX, Tape).
@@ -37,11 +37,10 @@ eval(sym(Name), CTX, Tape, CTX, NTape) :-
     eval_list(AST, FCTX, Tape, _CTX, NTape).
 eval(sym(Name), CTX, Tape, CTX, NTape) :-
     atom_string(N, Name),
-    (   NTape @- Tape+CTX.get(N)
-    ; throw(format('unknown symbol ~a', [N]))). % TODO: maybe remove throw and give false
+    NTape @- Tape+CTX.get(N).
 
 eval(sym(Name), CTX, Tape, NCTX, NTape) :-
-    prelude(Name, CTX, Tape, NCTX, NTape).
+    builtin(Name, CTX, Tape, NCTX, NTape).
 
 eval(lit(Lit), CTX, Tape, CTX, NTape) :-
     NTape @- Tape+Lit.

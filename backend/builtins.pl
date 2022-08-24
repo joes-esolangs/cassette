@@ -1,14 +1,14 @@
-:- module(prelude, [prelude/5]).
+:- module(builtins, [builtin/5]).
 :- use_module(tape).
 :- use_module(pretty_print).
 
 % the overidable builtins
 
-op(bin, "+", [X, Y, R] >> (R is X + Y)).
-op(unit, "out", [X] >> pretty_print(X)).
+def_op(bin, "+", [X, Y, R] >> (R is X + Y)).
+def_op(unit, "out", [X] >> pretty_print(X)).
 
-prelude(Op, CTX, Tape, CTX, NTape) :-
-    op(Ty, Op, F),
+builtin(Op, CTX, Tape, CTX, NTape) :-
+    def_op(Ty, Op, F),
     (   Ty = bin, bin_op(F, Tape, NTape)
     ;   Ty = unit, unit_op(F, Tape, NTape)).
 

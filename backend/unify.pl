@@ -15,7 +15,7 @@ unify(tape(([fn(Expr, FCTX)|ERest], _)), pat_tape([Pat|PRest]), CTX, NCTX) :-
     fn_list(Expr, Pat, FCTX, CTX, CTX0),
     unify(tape((ERest, _)), pat_tape(PRest), CTX0, NCTX).
 
-unify(_, _, _, _) :- false.
+unify(_, _, _, _) :- !.
 
 % unify list of patterns
 

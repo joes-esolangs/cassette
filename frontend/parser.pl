@@ -21,7 +21,6 @@ lit(lit(Value)) --> [lit_t(Value, _)].
 sym(sym(Name)) --> [sym_t(Name, _)].
 
 arg_list([Pattern|Rest]) --> pattern(Pattern), (arg_list(Rest); {Rest = []}).
-lit_list([L|Rest])     --> (lit(L); sym(L)), (lit_list(Rest); {Rest = []}).
 
 block(Instructions, T)    --> ({T = s}, ['->'(_)]; ['::'(_)]), instructions(Instructions), ['end'(_)].
 block([Instruction], _)   --> ['->'(_)], instruction(Instruction).
@@ -61,7 +60,7 @@ quote(quote(Body)) --> ['('(_)], instructions(Body), [')'(_)].
 
 as(as(Args)) --> ['as'(_)], (arg_list(Args); {Args = []}), ['->'(_)].
 
-loop(loop(Range, Body)) --> ['loop'(_)], lit_list(Range), {Range = [_]; Range = [_,_]}, block(Body, s).
+loop(loop(N, Body)) --> ['loop'(_)], (lit(N); sym(N)), block(Body, s).
 
 if(if(Condition, If, Else)) --> ['if'(_)], (instructions(Condition); {Condition = []}), [':-'(_)], instructions(If), (['else'(_)], instructions(Else), ['end'(_)]; ['end'(_)], {Else = []}).
 
