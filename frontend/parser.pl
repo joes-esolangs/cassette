@@ -27,7 +27,7 @@ block([Instruction], _)   --> ['->'(_)], instruction(Instruction).
 
 pat_list([Pattern|Rest])         --> arg_list(Pattern), ([','(_)], pat_list(Rest); {Rest = []}).
 
-pattern(pat_wild)  --> [sym_t(V, _), {string_codes(V, C), [0'_|_] = C}]. % TODO: support stuff like "_CTX"
+pattern(pat_wild)  --> [sym_t(V, _)], {string_codes(V, C), [0'_|_] = C}.
 pattern(pat_lit(Value))     --> [lit_t(Value, _)].
 pattern(pat_var(Name))     --> [sym_t(Name, _)].
 pattern(pat_cons(Head, Tail)) --> ['['(_)], pat_list(Head), ['<:'(_)], pattern(Tail), [']'(_)].

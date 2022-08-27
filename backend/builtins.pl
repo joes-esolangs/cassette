@@ -20,7 +20,7 @@ def_op(bin, ">", [X, Y, R] >> (X > Y, R = yes; R = no)).
 def_op(bin, "<", [X, Y, R] >> (X < Y, R = yes; R = no)).
 def_op(bin, ">=", [X, Y, R] >> (X >= Y, R = yes; R = no)).
 def_op(bin, "=<", [X, Y, R] >> (X =< Y, R = yes; R = no)).
-def_op(bin, "\\=", [X, Y, R] >> (X \= Y, R = yes; R = no)).
+def_op(bin, "/=", [X, Y, R] >> (X \= Y, R = yes; R = no)).
 def_op(bin, "=", [X, Y, R] >> (X = Y, R = yes; R = no)).
 
 %!  io
