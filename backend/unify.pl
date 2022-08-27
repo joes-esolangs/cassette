@@ -42,5 +42,7 @@ fn_list([Expr|ERest], [Pat|PRest], FCTX, CTX, NCTX) :-
 unify_fn([lit(Lit)], pat_lit(Lit), _, CTX, CTX).
 unify_fn(Expr, pat_var(Sym), FCTX, CTX, NCTX) :-
     unify(fn(Expr, FCTX), pat_var(Sym), CTX, NCTX).
+unify_fn([Expr], pat_tape(Pats), _, CTX, NCTX) :-
+    unify(Expr, pat_tape(Pats), CTX, NCTX).
 
 % TODO: make unify_stack predicate
