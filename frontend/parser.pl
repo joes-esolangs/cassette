@@ -32,9 +32,9 @@ pattern(pat_var(Name))     --> [sym_t(Name, _)].
 pattern(pat_cons(Head, Tail)) --> ['['(_)], pat_list(Head), ['<:'(_)], pattern(Tail), [']'(_)].
 pattern(pat_snoc(F, L)) --> ['['(_)], pattern(F), [':>'(_)], pat_list(L), [']'(_)].
 pattern(pat_tape(L))    --> ['['(_)], (pat_list(L); {L = []}), [']'(_)].
-pattern(pat_quote(Q))  --> ['('(_)], (pattern(pat_var(Q)); {Q = ""}), ['}'(_)]. % extract the code inside the quote to make a function
+pattern(pat_quote(Q))  --> ['('(_)], (pattern(pat_var(Q)); {Q = ""}), [')'(_)]. % extract the code inside the quote to make a function
 
-branch(branch(Expressions, When, Instructions), case) --> pat_list(Expressions), (['when'(_)], instructions(When); {When = []}), ['->'(_)], instructions(Instructions, all).
+branch(branch(Pattern, When, Instructions), case) --> pattern(Pattern), (['when'(_)], instructions(When); {When = []}), ['->'(_)], instructions(Instructions, all).
 branch(branch(Expressions, Instructions), cond) --> instructions(Expressions), ['->'(_)], instructions(Instructions, all).
 branches([Branch|Rest], Type) --> (['|'(_)]; {true}), branch(Branch, Type), (['|'(_)], branches(Rest, Type); {Rest = []}).
 
@@ -43,18 +43,21 @@ fn(fn(Name, Args, When, Body)) --> ['fn'(_)], (arg_list(Args); {Args = []}), [sy
 
 cond(cond(Branches, Else)) --> ['cond'(_)], branches(Branches, cond), (['|'(_), '->'(_)], instructions(Else); {Else = []}), ['end'(_)].
 
-case(case(Values, Branches, Else)) --> ['case'(_)], (elems(Values), ['->'(_)]; {Values = []}), branches(Branches, case), (['|'(_), '->'(_)], instructions(Else); {Else = []}), ['end'(_)].
+% TODO: add multiple values and patterns support
+% unify as and elemgroup
+case(case(Values, Branches, Else)) --> ['case'(_)], (elem_group([Values]), ['->'(_)]; {Values = []}), branches(Branches, case), (['|'(_), '->'(_)], instructions(Else); {Else = []}), ['end'(_)].
 
 tracer --> [sym_t("$trace",_)], {trace}; [sym_t("$gtrace",_)], {gtrace}.
 
 lam_body([as(Args)|Body]) --> arg_list(Args), block(Body, s).
 lam_body([as(Args)|Body], diff) --> arg_list(Args), ['->'(_)], instructions(Body).
 lam_bodies([Body|Bodies]) --> (['|'(_)]; {true}), lam_body(Body, diff), (['|'(_)], lam_bodies(Bodies); {Bodies = []}).
+
 quote(named_quote(Name, Body)) --> ['lam'(_), '~'(_), sym_t(Name, _)], lam_body(Body).
 quote(named_quote_case(Name, Bodies)) --> ['lam'(_), '~'(_), sym_t(Name, _)], lam_bodies(Bodies), ['end'(_)].
 
-% quote(quote(Body)) --> ['lam'(_)], lam_body(Body).
-% quote(quote(Body)) --> ['lam'(_)], instructions(Body), ['end'(_)].
+quote(quote(Body)) --> ['lam'(_)], lam_body(Body).
+quote(quote(Body)) --> ['lam'(_)], instructions(Body), ['end'(_)].
 quote(quote_case(Bodies)) --> ['lam'(_)], lam_bodies(Bodies), ['end'(_)].
 quote(quote(Body)) --> ['('(_)], instructions(Body), [')'(_)].
 
@@ -66,7 +69,7 @@ if(if(Condition, If, Else)) --> ['if'(_)], (instructions(Condition); {Condition 
 
 mod(mod(Name, Body)) --> ['mod'(_), sym_t(Name, _)], block(Body, t).
 mod_acc(mod_acc(Mod, Item)) --> [sym_t(Mod, _), ':'(_), sym_t(Item, _)].
-% TODO: parse impors and use
+% TODO: parse imports and use
 
 bool(lit(Bool)) --> [lit_t(yes, _), {Bool = yes}; lit_t(no, _), {Bool = no}].
 

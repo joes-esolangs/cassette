@@ -1,13 +1,15 @@
+
 :- module(eval, [eval/5, eval_list/5]).
 :- use_module(tape).
 :- use_module(unify).
+:- use_module('../frontend/parser').
 :- use_module(builtins).
 
 % constructs
 as_c([], CTX, Tape, CTX, Tape).
 as_c([Pat], CTX, Tape, NCTX, NTape) :-
     NTape @- Tape^Val,
-    unify(Val, Pat, CTX, NCTX).
+    !, unify(Val, Pat, CTX, NCTX).
 as_c([Pat|Rest], CTX, Tape, NCTX, NTape) :-
     as_c([Pat], CTX, Tape, CTX0, Tape0),
     as_c(Rest, CTX0, Tape0, NCTX, NTape).
@@ -17,17 +19,33 @@ tape_c([Exprs|Rest], CTX, Tape, NCTX, NTape) :-
     Tape0 @- Tape+fn(Exprs, CTX),
     tape_c(Rest, CTX, Tape0, NCTX, NTape).
 
+% maybe use it later? need to support multiple expressions and pattern
+case_c(Expr, branch(Pat, _When, Ins), CTX, Tape, NCTX, NTape) :-
+    eval(Expr, CTX, Tape, CTX0, Tape0),
+    unify(Expr, Pat, CTX0, CTX1),
+    eval_list(Ins, CTX1, Tape0, NCTX, NTape).
+
 quote_c(AST, (AST, [])).
 
-% make if sugar for a case where the condition is true or false
-%make cond sugar for a case with a bunch of when clauses
-
-% evalutation
-eval(sym("~>"), CTX, Tape, NCTX, NTape) :-
+call_c(CTX, Tape, NCTX, NTape) :-
     (   Tape0 @- Tape^quote(Quote)
     ;   throw("value is not a quote or there isn't enough values")), % TODO: maybe remove throw and give false
     to_list(Quote, Ins),
     eval_list(Ins, CTX, Tape0, NCTX, NTape).
+
+% make if sugar for a case where the condition is true or false
+% make cond sugar for a case with a bunch of when clauses
+
+% evalutation
+eval(case(_, [], []), CTX, Tape, CTX, Tape).
+eval(case(_, [], Else), CTX, Tape, NCTX, NTape) :-
+    eval_list(Else, CTX, Tape, NCTX, NTape).
+eval(case(Expr, [Branch|BRest], Else), CTX, Tape, NCTX, NTape) :-
+    (   Tape0 @- \Tape, case_c(Expr, Branch, CTX, Tape0, NCTX, NTape)
+    ;   eval(case(Expr, BRest, Else), CTX, Tape, NCTX, NTape)).
+
+eval(sym("~>"), CTX, Tape, NCTX, NTape) :-
+    call_c(CTX, Tape, NCTX, NTape).
 
 eval(sym("pass"), CTX, Tape, CTX, Tape).
 
@@ -59,7 +77,8 @@ eval(quote(AST), CTX, Tape, CTX, NTape) :-
 eval(fn(Name, Args, _When, Body), CTX, Tape, NCTX, Tape) :-
     AST = [as(Args)|Body],
     atom_string(N, Name),
-    NCTX = CTX.put(N, fn(AST, CTX)).
+    FCTX = CTX.put(N, fn(AST, FCTX)),
+    NCTX = CTX.put(N, fn(AST, FCTX)).
 
 % evaluating a list of instructions
 eval_list([], CTX, Tape, CTX, Tape).
