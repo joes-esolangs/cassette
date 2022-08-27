@@ -1,0 +1,38 @@
+% implementation of joy combinators.
+% appendix of http://tunes.org/~iepos/joy.html
+% this will be part of the std
+
+%% stack combinators %%
+fn                 (A) zap  -> pass
+fn                 (A) i    -> A 
+fn                 (A) unit -> ((A))
+fn                 (A) rep  :: A A end
+fn                 (A) m    :: (A) A end
+fn                 (A) run  :: A (A) end
+fn                 (A) dup  :: (A) (A) end
+fn             (B) (A) k    -> A 
+fn             (B) (A) z    -> B
+fn             (B) (A) nip  -> (A)
+fn             (B) (A) sap  :: A B end
+fn             (B) (A) t    :: (A) B end
+fn             (B) (A) dip  :: A (B) end
+fn             (B) (A) cat  -> (B A) 
+fn             (B) (A) swat -> (A B)
+fn             (B) (A) swap :: (A) (B) end
+fn             (B) (A) cons -> ((B) A)
+fn             (B) (A) take -> (A (B))
+fn             (B) (A) tack -> (B (A))
+fn             (B) (A) sip  :: (B) A (B) end
+fn             (B) (A) w    :: (B) (B) A end
+fn             (B) (A) peek :: (B) (A) (B) end
+fn             (B) (A) cake :: ((B) A) (A (B)) end
+fn         (C) (B) (A) poke :: (A) (B) end
+fn         (C) (B) (A) b    :: ((C) B) A end 
+fn         (C) (B) (A) c    :: (B) (C) A end 
+fn         (C) (B) (A) dig  :: (B) (A) (C) end
+fn         (C) (B) (A) bury :: (A) (C) (B) end
+fn         (C) (B) (A) flip :: (A) (B) (C) end 
+fn         (C) (B) (A) s    :: ((C) B) (C) A end 
+fn     (D) (C) (B) (A) s'   :: ((D) C) A (D) B end 
+fn     (D) (C) (B) (A) j    :: ((C) (D) A) (B) A end
+fn (E) (D) (C) (B) (A) j'   :: ((D) A (E) B) (C) B end

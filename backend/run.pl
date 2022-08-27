@@ -1,10 +1,16 @@
-:- module(run, [run/1, run_bare/1, debugc/1]).
+:- module(run, [run/1, run2/1, run_bare/1, debugc/1]).
 :- use_module(eval).
 :- use_module('../frontend/parser').
 :- use_module(tape).
 
 % run predicates
 run(Code) :-
+    parse(Code, AST),
+    Tape @- !, CTX = ctx{},
+    eval_list(AST, CTX, Tape, ECTX, ETape),
+    eval(sym("main"), ECTX, ETape, _CTX, _Tape).
+
+run2(Code) :-
     parse(Code, AST),
     run_bare(AST).
 

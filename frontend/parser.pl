@@ -13,7 +13,7 @@ pparse(Code) :-
 
 instructions([Node|Rest]) --> instruction(Node, all), (instructions(Rest, all); {Rest = []}).
 
-instruction(Node, all) --> fn(Node); quote(Node); lit(Node); sym(Node); seq(Node); tracer; as(Node); loop(Node); if(Node); case(Node); cond(Node); mod_acc(Node); mod(Node); bool(Node).
+instruction(Node, all) --> fn(Node); quote(Node); lit(Node); sym(Node); seq(Node); as(Node); loop(Node); if(Node); case(Node); cond(Node); mod_acc(Node); mod(Node); bool(Node).
 instruction(Node) --> instruction(Node, all).
 instructions([Node|Rest], Type) --> instruction(Node, Type), (instructions(Rest, Type); {Rest = []}).
 
@@ -27,6 +27,7 @@ block([Instruction], _)   --> ['->'(_)], instruction(Instruction).
 
 pat_list([Pattern|Rest])         --> arg_list(Pattern), ([','(_)], pat_list(Rest); {Rest = []}).
 
+pattern(pat_wild)  --> [sym_t(V, _), {string_codes(V, C), [0'_|_] = C}]. % TODO: support stuff like "_CTX"
 pattern(pat_lit(Value))     --> [lit_t(Value, _)].
 pattern(pat_var(Name))     --> [sym_t(Name, _)].
 pattern(pat_cons(Head, Tail)) --> ['['(_)], pat_list(Head), ['<:'(_)], pattern(Tail), [']'(_)].
@@ -47,8 +48,6 @@ cond(cond(Branches, Else)) --> ['cond'(_)], branches(Branches, cond), (['|'(_), 
 % unify as and elemgroup
 case(case(Values, Branches, Else)) --> ['case'(_)], (elem_group([Values]), ['->'(_)]; {Values = []}), branches(Branches, case), (['|'(_), '->'(_)], instructions(Else); {Else = []}), ['end'(_)].
 
-tracer --> [sym_t("$trace",_)], {trace}; [sym_t("$gtrace",_)], {gtrace}.
-
 lam_body([as(Args)|Body]) --> arg_list(Args), block(Body, s).
 lam_body([as(Args)|Body], diff) --> arg_list(Args), ['->'(_)], instructions(Body).
 lam_bodies([Body|Bodies]) --> (['|'(_)]; {true}), lam_body(Body, diff), (['|'(_)], lam_bodies(Bodies); {Bodies = []}).
@@ -65,7 +64,7 @@ as(as(Args)) --> ['as'(_)], (arg_list(Args); {Args = []}), ['->'(_)].
 
 loop(loop(N, Body)) --> ['loop'(_)], (lit(N); sym(N)), block(Body, s).
 
-if(if(Condition, If, Else)) --> ['if'(_)], (instructions(Condition); {Condition = []}), [':-'(_)], instructions(If), (['else'(_)], instructions(Else), ['end'(_)]; ['end'(_)], {Else = []}).
+if(if(Condition, If, Else)) --> ['if'(_)], (instructions(Condition); {Condition = []}), ['->'(_)], instructions(If), (['else'(_)], instructions(Else), ['end'(_)]; ['end'(_)], {Else = []}).
 
 mod(mod(Name, Body)) --> ['mod'(_), sym_t(Name, _)], block(Body, t).
 mod_acc(mod_acc(Mod, Item)) --> [sym_t(Mod, _), ':'(_), sym_t(Item, _)].

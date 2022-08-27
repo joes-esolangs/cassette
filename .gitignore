@@ -154,6 +154,7 @@ src/reqs64.cab
 src/reqs32.cab
 .pl-history
 *.pl#
+cli/*.exe
 ReleaseNotes
 build-ppa-tmp
 scripts/upload

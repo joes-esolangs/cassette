@@ -25,12 +25,6 @@ tokenize([0'%|T], Out, LineNo) :-
     NextLineNo is LineNo + 1, !,
     tokenize(Remain, Out, NextLineNo).
 
-% block comments dont work
-tokenize([0';, 0'%|T], Out, LineNo) :-
-    consume_until(T, [0'%, 0';], Remain, _),
-    NextLineNo is LineNo + 1, !,
-    tokenize(Remain, Out, NextLineNo).
-
 % numbers
 tokenize([In|T_i], [Out|T_o], LineNo) :-
     code_type(In, digit),

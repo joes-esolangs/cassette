@@ -12,28 +12,32 @@ as_c([Pat|Rest], CTX, Tape, NCTX, NTape) :-
     as_c([Pat], CTX, Tape, CTX0, Tape0),
     as_c(Rest, CTX0, Tape0, NCTX, NTape).
 
+tape_group([], fn([], CTX), CTX).
+tape_group([tape(Exprs)|ERest], fn([tape(Tape)|VRest], CTX), CTX) :-
+    Empty @- !, tape_c(Exprs, CTX, Empty, Tape),
+    tape_group(ERest, fn(VRest, CTX), CTX).
+tape_group([Expr|ERest], fn([Expr|VRest], CTX), CTX) :- tape_group(ERest, fn(VRest, CTX), CTX).
+
 tape_c([], _CTX, (L, R), MTape) :- reverse(L, NL), MTape = (NL, R).
-tape_c([[tape(Exprs)]|Rest], CTX, Tape, NTape) :-
-    Empty @- !, tape_c(Exprs, CTX, Empty, Tape0),
-    Tape1 @- Tape+fn(tape(Tape0), CTX),
-    tape_c(Rest, CTX, Tape1, NTape).
 tape_c([Exprs|Rest], CTX, Tape, NTape) :-
-    Tape0 @- Tape+fn(Exprs, CTX),
+    tape_group(Exprs, Fn, CTX),
+    Tape0 @- Tape+Fn,
     tape_c(Rest, CTX, Tape0, NTape).
 
+case_eval_c([], _CTX1, CTX2, Tape, CTX2, Tape).
+case_eval_c([Expr|ERest], CTX1, CTX2, Tape, NCTX, NTape) :-
+    (   eval(Expr, CTX1, Tape, NCTX1, NTape)
+    ;   eval(Expr, CTX2, Tape, NCTX2, NTape)),
+    case_eval_c(ERest, NCTX1, NCTX2, Tape, NCTX, NTape).
+
 % maybe use it later? need to support multiple expressions and pattern
+% TODO: fix
 case_c(Expr, branch(Pat, _When, Ins), CTX, Tape, NCTX, NTape) :-
     eval(Expr, CTX, Tape, CTX0, Tape0),
-    unify(Expr, Pat, CTX0, CTX1),
-    eval_list(Ins, CTX1, Tape0, NCTX, NTape).
+    as_c(Pat, CTX0, Tape0, CTX1, NTape),
+    case_eval_c(Ins, CTX1, CTX0, Tape0, NCTX, NTape).
 
 quote_c(AST, (AST, [])).
-
-call_c(CTX, Tape, NCTX, NTape) :-
-    (   Tape0 @- Tape^quote(Quote)
-    ;   throw("value is not a quote or there isn't enough values")), % TODO: maybe remove throw and give false
-    to_list(Quote, Ins),
-    eval_list(Ins, CTX, Tape0, NCTX, NTape).
 
 % make if sugar for a case where the condition is true or false
 % make cond sugar for a case with a bunch of when clauses
@@ -46,10 +50,9 @@ eval(case(Expr, [Branch|BRest], Else), CTX, Tape, NCTX, NTape) :-
     (   Tape0 @- \Tape, case_c(Expr, Branch, CTX, Tape0, NCTX, NTape)
     ;   eval(case(Expr, BRest, Else), CTX, Tape, NCTX, NTape)).
 
-eval(sym("~>"), CTX, Tape, NCTX, NTape) :-
-    call_c(CTX, Tape, NCTX, NTape).
-
 eval(sym("pass"), CTX, Tape, CTX, Tape).
+eval(sym("trace!"), CTX, Tape, CTX, Tape) :- trace.
+eval(sym("gtrace!"), CTX, Tape, CTX, Tape) :- gtrace.
 
 eval(sym(Name), CTX, Tape, CTX, NTape) :-
     atom_string(N, Name),
@@ -60,7 +63,7 @@ eval(sym(Name), CTX, Tape, CTX, NTape) :-
     NTape @- Tape+CTX.get(N).
 
 eval(sym(Name), CTX, Tape, NCTX, NTape) :-
-    builtin(Name, CTX, Tape, NCTX, NTape).
+    builtin(Name, CTX, Tape, NCTX, NTape); fail.
 
 eval(lit(Lit), CTX, Tape, CTX, NTape) :-
     NTape @- Tape+Lit.

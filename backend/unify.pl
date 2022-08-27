@@ -2,10 +2,12 @@
 :- use_module(tape).
 
 % unify patterns
+% FIXME
+unify(_, pat_wild, CTX, CTX).
 
 unify(Lit, pat_lit(Lit), CTX, CTX).
 
-% TODO: make non linear. if sym is already in ctx, use its value
+% TODO: if sym is already in ctx, use its value
 unify(Expr, pat_var(Sym), CTX, NCTX) :-
     atom_string(N, Sym),
     NCTX = CTX.put(N, Expr).
