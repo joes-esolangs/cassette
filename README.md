@@ -3,6 +3,9 @@ Cassette is a new programming based off of the languages metatape, elixir, and j
 - Dynamically typed
 - Interpreted (for now)
 - Homoiconic 
+- Functional
+- Concatenive
+- Tape Based
 - Metaprogrammable (in the future).
  
 # how does it work? 
