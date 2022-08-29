@@ -33,15 +33,15 @@ case_c(Expr, branch(Pat, _When, Ins), CTX, Tape, NCTX, NTape) :-
 
 %unquote_c(unquote(Expr), Out, CTX) :- unquote_c(Expr, Out, CTX).
 %unquote_c(splice(Expr), Out, CTX) :- splice_c(Expr, [], CTX, Out).
-unquote_c(Expr, Out, CTX) :-
+unquote_c(Expr, NTape, CTX) :-
     Empty @- !,
-    eval(Expr, CTX, Empty, _, NTape), to_list(NTape, [Out]).
+    eval(Expr, CTX, Empty, _, NTape).
 
 splice_c([], Out, _, Out).
 splice_c([Expr|ERest], Out, CTX, Res) :-
     Empty @- !,
     eval_list(Expr, CTX, Empty, _, NTape),
-    to_list(NTape, A), append(Out, A, NOut),
+    NTape @- Out++NOut,
     splice_c(ERest, NOut, CTX, Res).
 
 % TODO: nested quasiquoting https://docs.racket-lang.org/guide/qq.html.
@@ -49,16 +49,27 @@ splice_c([Expr|ERest], Out, CTX, Res) :-
 quasiquote_c([], Out, _, Out).
 quasiquote_c([unquote(E)|In], Out, CTX, Res) :-
     unquote_c(E, O, CTX),
-    (   is_list(O), append(Out, O, Out1)
-    ;   append(Out, [O], Out1)),
+    Out @- O++Out1,
     quasiquote_c(In, Out1, CTX, Res).
 quasiquote_c([splice(Exprs)|In], Out, CTX, Res) :-
-    splice_c(Exprs, [], CTX, O),
-    append(Out, O, NOut),
+    Empty @- !,
+    reverse(Exprs, RExprs),
+    splice_c(RExprs, Empty, CTX, O),
+    Out @- O++NOut,
     quasiquote_c(In, NOut, CTX, Res).
 quasiquote_c([E|In], Out, CTX, Res) :-
-    append(Out, [E], Out1),
+    to_tape([E], T),
+    Out1 @- T++Out,
     quasiquote_c(In, Out1, CTX, Res).
+
+friedquote_c([], Res, Tape, Tape, Res).
+friedquote_c([hole|FRest], Acc, Tape, NTape, Res) :-
+    Tape0 @- Tape^H,
+    NAcc @- Acc+H,
+    friedquote_c(FRest, NAcc, Tape0, NTape, Res).
+friedquote_c([E|FRest], Acc, Tape, NTape, Res) :-
+    NAcc @- Acc+E,
+    friedquote_c(FRest, NAcc, Tape, NTape, Res).
 
 quote_c(AST, (AST, [])).
 
@@ -99,9 +110,15 @@ eval(tape(Exprs), CTX, Tape, CTX, NTape) :-
     NTape @- Tape+tape(MTape).
 
 eval(quasiquote(AST), CTX, Tape, CTX, NTape) :-
-    quasiquote_c(AST, [], CTX, Q),
-    to_tape(Q, Quote),
+    Empty @- !,
+    quasiquote_c(AST, Empty, CTX, Quote),
     NTape @- Tape+quote(Quote).
+
+eval(friedquote(AST), CTX, Tape, CTX, NTape) :-
+    reverse(AST, RAST),
+    Empty @- !,
+    friedquote_c(RAST, Empty, Tape, Tape0, Quote),
+    NTape @- Tape0+quote(Quote).
 
 eval(quote(AST), CTX, Tape, CTX, NTape) :-
     quote_c(AST, Quote),
