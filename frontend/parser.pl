@@ -13,7 +13,9 @@ pparse(Code) :-
 
 instructions([Node|Rest]) --> instruction(Node, all), (instructions(Rest, all); {Rest = []}).
 
-instruction(Node, all) --> fn(Node); quote(Node); lit(Node); sym(Node); seq(Node); as(Node); loop(Node); if(Node); case(Node); cond(Node); mod_acc(Node); mod(Node); bool(Node).
+instruction(Node, all) --> fn(Node); quote(Node); lit(Node); sym(Node); seq(Node); as(Node); loop(Node); if(Node); case(Node); cond(Node); mod_acc(Node); mod(Node); bool(Node); quasiquote(Node); friedquote(Node).
+instruction(Node, quasi) --> instruction(Node); splice(Node); unquote(Node).
+instruction(Node, fried) --> fry(Node); instruction(Node).
 instruction(Node) --> instruction(Node, all).
 instructions([Node|Rest], Type) --> instruction(Node, Type), (instructions(Rest, Type); {Rest = []}).
 
@@ -48,6 +50,15 @@ cond(cond(Branches, Else)) --> ['cond'(_)], branches(Branches, cond), (['|'(_), 
 % unify as and elemgroup
 case(case(Values, Branches, Else)) --> ['case'(_)], (elem_group([Values]), ['->'(_)]; {Values = []}), branches(Branches, case), (['|'(_), '->'(_)], instructions(Else); {Else = []}), ['end'(_)].
 
+fry(hole) --> [sym_t("_",_)].
+fry(splice) --> [sym_t("@",_)].
+% wont parse
+friedquote(friedquote(Body)) --> ['.'(_), '('(_)], instructions(Body, fried), [')'(_)].
+
+splice(splice(Elems)) --> [':'(_), '('(_)], elems(Elems), [')'(_)].
+unquote(unquote(Expr)) --> [','(_)], instruction(Expr, quasi).
+quasiquote(quasiquote(Body)) --> ['t'(_), '('(_)], instructions(Body, quasi), [')'(_)].
+
 lam_body([as(Args)|Body]) --> arg_list(Args), block(Body, s).
 lam_body([as(Args)|Body], diff) --> arg_list(Args), ['->'(_)], instructions(Body).
 lam_bodies([Body|Bodies]) --> (['|'(_)]; {true}), lam_body(Body, diff), (['|'(_)], lam_bodies(Bodies); {Bodies = []}).
@@ -58,7 +69,7 @@ quote(named_quote_case(Name, Bodies)) --> ['lam'(_), '~'(_), sym_t(Name, _)], la
 quote(quote(Body)) --> ['lam'(_)], lam_body(Body).
 quote(quote(Body)) --> ['lam'(_)], instructions(Body), ['end'(_)].
 quote(quote_case(Bodies)) --> ['lam'(_)], lam_bodies(Bodies), ['end'(_)].
-quote(quote(Body)) --> ['('(_)], instructions(Body), [')'(_)].
+quote(quote(Body)) --> ['('(_)], (instructions(Body); {Body = []}), [')'(_)].
 
 as(as(Args)) --> ['as'(_)], (arg_list(Args); {Args = []}), ['->'(_)].
 

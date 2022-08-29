@@ -5,7 +5,7 @@
 % FIXME
 unify(_, pat_wild, CTX, CTX).
 
-unify(Lit, pat_lit(Lit), CTX, CTX).
+unify(lit(Lit), pat_lit(Lit), CTX, CTX).
 
 % TODO: if sym is already in ctx, use its value
 unify(Expr, pat_var(Sym), CTX, NCTX) :-

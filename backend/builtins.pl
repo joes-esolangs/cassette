@@ -34,17 +34,17 @@ builtin(Op, CTX, Tape, CTX, NTape) :-
 
 % utils
 bin_pop(Tape, X, Y, NTape) :-
-    Tape0 @- Tape^X, NTape @- Tape0^Y.
+    Tape0 @- Tape^lit(X), NTape @- Tape0^lit(Y).
 
 bin_op(Op, Tape, NTape) :-
     bin_pop(Tape, X, Y, Tape0),
     call(Op, Y, X, R),
-    NTape @- Tape0+R.
+    NTape @- Tape0+lit(R).
 
 un_op(Op, Tape, NTape) :-
     Tape0 @- Tape^X,
     call(Op, X, R),
-    NTape @- Tape0+R.
+    NTape @- Tape0+lit(R).
 
 unit_op(Op, Tape, NTape) :-
     NTape @- Tape^X,
