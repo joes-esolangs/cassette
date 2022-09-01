@@ -34,12 +34,12 @@ case_c(Expr, branch(Pats, _When, Ins), CTX, _Tape, NCTX, NTape) :-
 %unquote_c(splice(Expr), Out, CTX) :- splice_c(Expr, [], CTX, Out).
 unquote_c(Expr, NTape, CTX) :-
     Empty @- !,
-    eval(Expr, CTX, Empty, _, NTape).
+    eval(Expr, CTX, Empty, _, NTape); !, fail.
 
 splice_c([], Out, _, Out).
 splice_c([Expr|ERest], Out, CTX, Res) :-
     Empty @- !,
-    eval_list(Expr, CTX, Empty, _, NTape),
+    (   eval_list(Expr, CTX, Empty, _, NTape); !, fail),
     NOut @- NTape++Out,
     splice_c(ERest, NOut, CTX, Res).
 
@@ -47,13 +47,13 @@ splice_c([Expr|ERest], Out, CTX, Res) :-
 % evaluate them
 quasiquote_c([], Out, _, Out).
 quasiquote_c([unquote(E)|In], Out, CTX, Res) :-
-    unquote_c(E, O, CTX),
+    !, unquote_c(E, O, CTX),
     Out1 @- Out++O,
     quasiquote_c(In, Out1, CTX, Res).
 quasiquote_c([splice(Exprs)|In], Out, CTX, Res) :-
     Empty @- !,
     reverse(Exprs, RExprs),
-    splice_c(RExprs, Empty, CTX, O),
+    !, splice_c(RExprs, Empty, CTX, O),
     NOut @- Out++O,
     quasiquote_c(In, NOut, CTX, Res).
 quasiquote_c([E|In], Out, CTX, Res) :-

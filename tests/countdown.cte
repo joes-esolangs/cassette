@@ -1,8 +1,8 @@
 fn a dup :: a a end
 
-fn 0 countdown :: "BLAST OFF" outn end
+fn 0 countdown :: msg outn end
 fn n countdown :: n dup outn 1 - countdown end
 
 fn main ::
-    5 countdown
+  "BLAST OFF!!" 5 countdown
 end
