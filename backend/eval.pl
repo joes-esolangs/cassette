@@ -102,7 +102,7 @@ eval(sym(Name), CTX, Tape, CTX, NTape) :-
     NTape @- Tape+CTX.get(N).
 
 eval(sym(Name), CTX, Tape, NCTX, NTape) :-
-    builtin(Name, CTX, Tape, NCTX, NTape); fail.
+    builtin(Name, CTX, Tape, NCTX, NTape); !, fail.
 
 eval(lit(Lit), CTX, Tape, CTX, NTape) :-
     NTape @- Tape+lit(Lit).
@@ -130,15 +130,18 @@ eval(quote(AST), CTX, Tape, CTX, NTape) :-
     NTape @- Tape+quote(Quote).
 
 eval(fn(Name, Args, When, Body), CTX, Tape, NCTX, Tape) :-
-    AST = case(none, [branch(Args, When, Body)], []),
     atom_string(N, Name),
+    (   fn([case(none, Branches, _Else)], _CTX) = CTX.get(N),
+        append(Branches, [branch(Args, When, Body)], NBranches),
+        AST = case(none, NBranches, [])
+    ;   AST = case(none, [branch(Args, When, Body)], [])),
     FCTX = CTX.put(N, fn([AST], FCTX)),
     NCTX = CTX.put(N, fn([AST], FCTX)).
 
 % evaluating a list of instructions
 eval_list([], CTX, Tape, CTX, Tape).
 eval_list([I|Rest], CTX, Tape, NCTX, NTape) :-
-    eval(I, CTX, Tape, CTX0, Tape0),
+    !, eval(I, CTX, Tape, CTX0, Tape0),
     eval_list(Rest, CTX0, Tape0, NCTX, NTape).
 
 eval2_list([], _CTX1, CTX2, Tape, CTX2, Tape).
