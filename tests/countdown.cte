@@ -1,0 +1,11 @@
+fn a dup :: a a end
+
+fn n countdown ->
+  case n ->
+    | 0 -> "BLAST OFF" outn
+    | n -> n dup outn 1 - countdown
+  end
+
+fn main ::
+    5 countdown
+end

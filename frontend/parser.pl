@@ -37,7 +37,7 @@ pattern(pat_snoc(F, L)) --> ['['(_)], pattern(F), [':>'(_)], pat_list(L), [']'(_
 pattern(pat_tape(L))    --> ['['(_)], (pat_list(L); {L = []}), [']'(_)].
 pattern(pat_quote(Q))  --> ['('(_)], (pattern(pat_var(Q)); {Q = ""}), [')'(_)]. % extract the code inside the quote to make a function
 
-branch(branch(Pattern, When, Instructions), case) --> pattern(Pattern), (['when'(_)], instructions(When); {When = []}), ['->'(_)], instructions(Instructions, all).
+branch(branch(Patterns, When, Instructions), case) --> arg_list(Patterns), (['when'(_)], instructions(When); {When = []}), ['->'(_)], instructions(Instructions, all).
 branch(branch(Expressions, Instructions), cond) --> instructions(Expressions), ['->'(_)], instructions(Instructions, all).
 branches([Branch|Rest], Type) --> (['|'(_)]; {true}), branch(Branch, Type), (['|'(_)], branches(Rest, Type); {Rest = []}).
 
@@ -48,7 +48,7 @@ cond(cond(Branches, Else)) --> ['cond'(_)], branches(Branches, cond), (['|'(_), 
 
 % TODO: add multiple values and patterns support
 % unify as and elemgroup
-case(case(Values, Branches, Else)) --> ['case'(_)], (elem_group([Values]), ['->'(_)]; {Values = []}), branches(Branches, case), (['|'(_), '->'(_)], instructions(Else); {Else = []}), ['end'(_)].
+case(case(Values, Branches, Else)) --> ['case'(_)], (elem_group(Values), {Values = [_|_]}, ['->'(_)]; {Values = none}), branches(Branches, case), (['|'(_), '->'(_)], instructions(Else); {Else = []}), ['end'(_)].
 
 fry(hole) --> [sym_t("_",_)].
 fry(splice) --> [sym_t("@",_)].

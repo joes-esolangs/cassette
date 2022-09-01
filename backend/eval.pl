@@ -24,12 +24,11 @@ tape_c([Exprs|Rest], CTX, Tape, NTape) :-
     Tape0 @- Tape+Fn,
     tape_c(Rest, CTX, Tape0, NTape).
 
-% maybe use it later? need to support multiple expressions and patterns
-case_c(Expr, branch(Pat, _When, Ins), CTX, Tape, NCTX, NTape) :-
-    eval(Expr, CTX, Tape, CTX0, Tape0),
-    as_c([Pat], CTX0, Tape0, CTX1, _Tape),
-    Empty @- !,
-    eval2_list(Ins, CTX1, CTX0, Empty, NCTX, NTape).
+case_c(none, Branches, CTX, Tape, NCTX, NTape) :-
+    case_c(Tape, Branches, CTX, Tape, NCTX, NTape); !, fail.
+case_c(Expr, branch(Pats, _When, Ins), CTX, _Tape, NCTX, NTape) :-
+    as_c(Pats, CTX, Expr, CTX1, Tape),
+    eval2_list(Ins, CTX, CTX1, Tape, NCTX, NTape).
 
 %unquote_c(unquote(Expr), Out, CTX) :- unquote_c(Expr, Out, CTX).
 %unquote_c(splice(Expr), Out, CTX) :- splice_c(Expr, [], CTX, Out).
@@ -41,7 +40,7 @@ splice_c([], Out, _, Out).
 splice_c([Expr|ERest], Out, CTX, Res) :-
     Empty @- !,
     eval_list(Expr, CTX, Empty, _, NTape),
-    NTape @- Out++NOut,
+    NOut @- NTape++Out,
     splice_c(ERest, NOut, CTX, Res).
 
 % TODO: nested quasiquoting https://docs.racket-lang.org/guide/qq.html.
@@ -49,13 +48,13 @@ splice_c([Expr|ERest], Out, CTX, Res) :-
 quasiquote_c([], Out, _, Out).
 quasiquote_c([unquote(E)|In], Out, CTX, Res) :-
     unquote_c(E, O, CTX),
-    Out @- O++Out1,
+    Out1 @- Out++O,
     quasiquote_c(In, Out1, CTX, Res).
 quasiquote_c([splice(Exprs)|In], Out, CTX, Res) :-
     Empty @- !,
     reverse(Exprs, RExprs),
     splice_c(RExprs, Empty, CTX, O),
-    Out @- O++NOut,
+    NOut @- Out++O,
     quasiquote_c(In, NOut, CTX, Res).
 quasiquote_c([E|In], Out, CTX, Res) :-
     to_tape([E], T),
@@ -66,6 +65,10 @@ friedquote_c([], Res, Tape, Tape, Res).
 friedquote_c([hole|FRest], Acc, Tape, NTape, Res) :-
     Tape0 @- Tape^H,
     NAcc @- Acc+H,
+    friedquote_c(FRest, NAcc, Tape0, NTape, Res).
+friedquote_c([splice|FRest], Acc, Tape, NTape, Res) :-
+    Tape0 @- Tape^quote(Quote),
+    NAcc @- Quote++Acc,
     friedquote_c(FRest, NAcc, Tape0, NTape, Res).
 friedquote_c([E|FRest], Acc, Tape, NTape, Res) :-
     NAcc @- Acc+E,
@@ -81,7 +84,9 @@ eval(case(_, [], []), CTX, Tape, CTX, Tape).
 eval(case(_, [], Else), CTX, Tape, NCTX, NTape) :-
     eval_list(Else, CTX, Tape, NCTX, NTape).
 eval(case(Expr, [Branch|BRest], Else), CTX, Tape, NCTX, NTape) :-
-    (   case_c(Expr, Branch, CTX, Tape, NCTX, NTape)
+    (   (Expr = none; Expr = fn), case_c(Expr, Branch, CTX, Tape, NCTX, NTape)
+    ;   Empty @- !, eval_list(Expr, CTX, Empty, CTX0, Tape0),
+        !, case_c(Tape0, Branch, CTX0, Tape0, NCTX, NTape)
     ;   eval(case(Expr, BRest, Else), CTX, Tape, NCTX, NTape)).
 
 eval(sym("pass"), CTX, Tape, CTX, Tape).
@@ -124,11 +129,11 @@ eval(quote(AST), CTX, Tape, CTX, NTape) :-
     quote_c(AST, Quote),
     NTape @- Tape+quote(Quote).
 
-eval(fn(Name, Args, _When, Body), CTX, Tape, NCTX, Tape) :-
-    AST = [as(Args)|Body],
+eval(fn(Name, Args, When, Body), CTX, Tape, NCTX, Tape) :-
+    AST = case(none, [branch(Args, When, Body)], []),
     atom_string(N, Name),
-    FCTX = CTX.put(N, fn(AST, FCTX)),
-    NCTX = CTX.put(N, fn(AST, FCTX)).
+    FCTX = CTX.put(N, fn([AST], FCTX)),
+    NCTX = CTX.put(N, fn([AST], FCTX)).
 
 % evaluating a list of instructions
 eval_list([], CTX, Tape, CTX, Tape).
