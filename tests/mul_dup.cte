@@ -1,0 +1,11 @@
+fn a dup :: a a end
+
+fn a 0 n_dup -> pass 
+fn a n n_dup ::
+  a dup n 1 - n_dup
+end
+
+fn main ::
+ 51 5 n_dup
+ print_tape
+end

@@ -1,0 +1,7 @@
+fn a zap -> pass
+
+fn a 4 test :: zap end
+
+fn main ::
+    5 4 case _ 4 -> pass end print_tape
+end

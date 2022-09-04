@@ -27,7 +27,8 @@ tape_c([Exprs|Rest], CTX, Tape, NTape) :-
 case_c(none, Branches, CTX, Tape, NCTX, NTape) :-
     case_c(Tape, Branches, CTX, Tape, NCTX, NTape); !, fail.
 case_c(Expr, branch(Pats, _When, Ins), CTX, _Tape, NCTX, NTape) :-
-    as_c(Pats, CTX, Expr, CTX1, Tape),
+    reverse(Pats, Pats1),
+    as_c(Pats1, CTX, Expr, CTX1, Tape),
     eval2_list(Ins, CTX, CTX1, Tape, NCTX, NTape).
 
 %unquote_c(unquote(Expr), Out, CTX) :- unquote_c(Expr, Out, CTX).
@@ -58,16 +59,16 @@ quasiquote_c([splice(Exprs)|In], Out, CTX, Res) :-
     quasiquote_c(In, NOut, CTX, Res).
 quasiquote_c([E|In], Out, CTX, Res) :-
     to_tape([E], T),
-    Out1 @- T++Out,
+    Out1 @- Out++T,
     quasiquote_c(In, Out1, CTX, Res).
 
 friedquote_c([], Res, Tape, Tape, Res).
 friedquote_c([hole|FRest], Acc, Tape, NTape, Res) :-
-    Tape0 @- Tape^H,
+    (Tape0 @- Tape^H; !, fail),
     NAcc @- Acc+H,
     friedquote_c(FRest, NAcc, Tape0, NTape, Res).
 friedquote_c([splice|FRest], Acc, Tape, NTape, Res) :-
-    Tape0 @- Tape^quote(Quote),
+    (Tape0 @- Tape^quote(Quote); !, fail),
     NAcc @- Quote++Acc,
     friedquote_c(FRest, NAcc, Tape0, NTape, Res).
 friedquote_c([E|FRest], Acc, Tape, NTape, Res) :-
@@ -102,7 +103,9 @@ eval(sym(Name), CTX, Tape, CTX, NTape) :-
     NTape @- Tape+CTX.get(N).
 
 eval(sym(Name), CTX, Tape, NCTX, NTape) :-
-    builtin(Name, CTX, Tape, NCTX, NTape); !, fail.
+    (   builtin(Name, CTX, Tape, NCTX, NTape)
+    ;   Name = "print_tape", print_term(Tape, []), nl
+    ;   !, fail).
 
 eval(lit(Lit), CTX, Tape, CTX, NTape) :-
     NTape @- Tape+lit(Lit).
@@ -122,7 +125,7 @@ eval(quasiquote(AST), CTX, Tape, CTX, NTape) :-
 eval(friedquote(AST), CTX, Tape, CTX, NTape) :-
     reverse(AST, RAST),
     Empty @- !,
-    friedquote_c(RAST, Empty, Tape, Tape0, Quote),
+    !, friedquote_c(RAST, Empty, Tape, Tape0, Quote),
     NTape @- Tape0+quote(Quote).
 
 eval(quote(AST), CTX, Tape, CTX, NTape) :-

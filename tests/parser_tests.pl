@@ -1,1 +1,0 @@
-:- module(parser_tests).

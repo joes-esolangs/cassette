@@ -84,9 +84,12 @@ mod_acc(mod_acc(Mod, Item)) --> [sym_t(Mod, _), ':'(_), sym_t(Item, _)].
 bool(lit(Bool)) --> [lit_t(yes, _), {Bool = yes}; lit_t(no, _), {Bool = no}].
 
 elem_group([Node|Rest])     --> instruction(Node, all), (elem_group(Rest); {Rest = []}).
+
 elems([Node|Rest])          --> elem_group(Node), ([','(_)], elems(Rest); {Rest = []}).
+dict_elems([Key-Expr|Rest]) --> [lit_t(Key, _), '=>'(_)], elem_group(Expr), ([','(_)], dict_elems(Rest); {Rest = []}).
 seq(cons(Head, Tail))       --> ['['(_)], elems(Head), ['<:'(_)], elem_group(Tail), [']'(_)].
 seq(snoc(Beginning, Last))       --> ['['(_)], elem_group(Beginning), [':>'(_)], elems(Last), [']'(_)].
+seq(dict(Dict)) --> ['['(_)], (dict_elems(Elements); {Elements = []}), [']'(_)], {dict_create(Dict, _, Elements)}.
 seq(tape(Elements))          --> ['['(_)], (elems(Elements); {Elements = []}), [']'(_)]. % circular doubly linked list
 
 

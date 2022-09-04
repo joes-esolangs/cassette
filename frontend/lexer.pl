@@ -59,6 +59,7 @@ tokenize([0'a, 0's|T_i], ['as'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineN
 tokenize([0'e, 0'n, 0'd|T_i], ['end'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0':, 0':|T_i], ['::'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'-, 0'>|T_i], ['->'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'=, 0'>|T_i], ['=>'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0':, 0'>|T_i], [':>'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'<, 0':|T_i], ['<:'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'(|T_i], ['('(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
@@ -75,6 +76,7 @@ tokenize([0'~|T_i], ['~'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0''|T_i], ['t'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'.|T_i], ['.'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'_|T_i], ['_'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'{|T_i], ['{'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 
 % strings
 tokenize([0'"|T_i], [Out|T_o], LineNo) :-
