@@ -1,6 +1,6 @@
 # Cassette
 Cassette is a new programming based off of the languages metatape, elixir, and joy, evolving syntax and semantics from each. Cassette is 
-- Dynamically typed
+- Untyped
 - Interpreted (for now)
 - Homoiconic 
 - Functional
