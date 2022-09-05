@@ -1,0 +1,6 @@
+fn 0 fact -> 1 
+fn n fact when n 0 > :: n n 1 - fact * end
+
+fn main :: 
+    10 fact outn
+end

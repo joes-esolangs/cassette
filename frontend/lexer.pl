@@ -20,6 +20,7 @@ tokenize([In|T], Out, LineNo) :-
     tokenize(T, Out, LineNo).
 
 % ignore comments
+% TODO: block comments
 tokenize([0'%|T], Out, LineNo) :-
     consume_until(T, 0'\n, Remain, _),
     NextLineNo is LineNo + 1, !,
@@ -76,7 +77,7 @@ tokenize([0'~|T_i], ['~'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0''|T_i], ['t'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'.|T_i], ['.'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 tokenize([0'_|T_i], ['_'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
-tokenize([0'{|T_i], ['{'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
+tokenize([0'%|T_i], ['%'(LineNo)|T_o], LineNo) :- tokenize(T_i, T_o, LineNo).
 
 % strings
 tokenize([0'"|T_i], [Out|T_o], LineNo) :-

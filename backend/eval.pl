@@ -24,12 +24,18 @@ tape_c([Exprs|Rest], CTX, Tape, NTape) :-
     Tape0 @- Tape+Fn,
     tape_c(Rest, CTX, Tape0, NTape).
 
+cond_c([], Else, case([lit(yes)], [], Else)).
+cond_c([branch(Cond, Ins)|IRest], Else, case([lit(yes)], [branch([pat_lit(yes)], Cond, Ins)|BRest], Else)) :-
+       cond_c(IRest, Else, case([lit(yes)], BRest, Else)).
+
 case_c(none, Branches, CTX, Tape, NCTX, NTape) :-
     case_c(Tape, Branches, CTX, Tape, NCTX, NTape); !, fail.
-case_c(Expr, branch(Pats, _When, Ins), CTX, _Tape, NCTX, NTape) :-
+case_c(Expr, branch(Pats, When, Ins), CTX, _Tape, NCTX, NTape) :-
     reverse(Pats, Pats1),
     as_c(Pats1, CTX, Expr, CTX1, Tape),
-    eval2_list(Ins, CTX, CTX1, Tape, NCTX, NTape).
+    (   When = []
+    ;   Empty @- !, eval_list(When, CTX, Empty, _CTX0, Tape0), lit(yes) @- @Tape0),
+    eval2_list(Ins, CTX1, CTX, Tape, NCTX, NTape).
 
 %unquote_c(unquote(Expr), Out, CTX) :- unquote_c(Expr, Out, CTX).
 %unquote_c(splice(Expr), Out, CTX) :- splice_c(Expr, [], CTX, Out).
@@ -77,17 +83,24 @@ friedquote_c([E|FRest], Acc, Tape, NTape, Res) :-
 
 quote_c(AST, (AST, [])).
 
-% make if sugar for a case where the condition is true or false
 % make cond sugar for a case with a bunch of when clauses
 
 % evalutation
+eval(if(Expr, If, Else), CTX, Tape, NCTX, NTape) :-
+    (Expr = [], Cond = none; Cond = Expr),
+    Case = case(Cond, [branch([pat_lit(yes)], [], If)], Else),
+    eval(Case, CTX, Tape, NCTX, NTape).
+
+eval(cond(Branches, Else), CTX, Tape, NCTX, NTape) :-
+    cond_c(Branches, Else, Case), eval(Case, CTX, Tape, NCTX, NTape).
+
 eval(case(_, [], []), CTX, Tape, CTX, Tape).
 eval(case(_, [], Else), CTX, Tape, NCTX, NTape) :-
     eval_list(Else, CTX, Tape, NCTX, NTape).
 eval(case(Expr, [Branch|BRest], Else), CTX, Tape, NCTX, NTape) :-
-    (   (Expr = none; Expr = fn), case_c(Expr, Branch, CTX, Tape, NCTX, NTape)
-    ;   Empty @- !, eval_list(Expr, CTX, Empty, CTX0, Tape0),
-        !, case_c(Tape0, Branch, CTX0, Tape0, NCTX, NTape)
+    (   Expr = none -> case_c(Expr, Branch, CTX, Tape, NCTX, NTape)
+    ;   Empty @- !, eval_list(Expr, CTX, Empty, CTX0, Tape0) ->
+        case_c(Tape0, Branch, CTX0, Tape0, NCTX, NTape)
     ;   eval(case(Expr, BRest, Else), CTX, Tape, NCTX, NTape)).
 
 eval(sym("pass"), CTX, Tape, CTX, Tape).
@@ -104,8 +117,8 @@ eval(sym(Name), CTX, Tape, CTX, NTape) :-
 
 eval(sym(Name), CTX, Tape, NCTX, NTape) :-
     (   builtin(Name, CTX, Tape, NCTX, NTape)
-    ;   Name = "print_tape", print_term(Tape, []), nl
-    ;   !, fail).
+    ;   Name = "print_tape" -> print_term(Tape, []), nl
+    ;   !, fail). % TODO: error system to give an error if this happens
 
 eval(lit(Lit), CTX, Tape, CTX, NTape) :-
     NTape @- Tape+lit(Lit).
@@ -134,12 +147,15 @@ eval(quote(AST), CTX, Tape, CTX, NTape) :-
 
 eval(fn(Name, Args, When, Body), CTX, Tape, NCTX, Tape) :-
     atom_string(N, Name),
-    (   fn([case(none, Branches, _Else)], _CTX) = CTX.get(N),
+    Else = [error(format("match_error: no match for function ~a", N))],
+    (   fn([case(none, Branches, _Else)], _CTX) = CTX.get(N) ->
         append(Branches, [branch(Args, When, Body)], NBranches),
-        AST = case(none, NBranches, [])
-    ;   AST = case(none, [branch(Args, When, Body)], [])),
+        AST = case(none, NBranches, Else)
+    ;   AST = case(none, [branch(Args, When, Body)], Else)),
     FCTX = CTX.put(N, fn([AST], FCTX)),
     NCTX = CTX.put(N, fn([AST], FCTX)).
+
+eval(error(Msg), _, _, _, _) :- throw(Msg).
 
 % evaluating a list of instructions
 eval_list([], CTX, Tape, CTX, Tape).
